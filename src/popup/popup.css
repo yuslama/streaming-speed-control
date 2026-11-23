@@ -4,12 +4,12 @@
   --surface: #141322;
   --surface-elevated: #1c1a2e;
   --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(167, 139, 250, 0.45);
+  --border-strong: rgba(250, 204, 21, 0.55);
   --text: #f8fafc;
   --text-muted: #94a3b8;
-  --accent: #7c3aed;
-  --accent-bright: #8b5cf6;
-  --accent-soft: rgba(124, 58, 237, 0.22);
+  --accent: #eab308;
+  --accent-bright: #facc15;
+  --accent-soft: rgba(234, 179, 8, 0.22);
   --active-green: #10b981;
 }
 
@@ -22,7 +22,7 @@
 body {
   margin: 0;
   width: 320px;
-  background: radial-gradient(circle at top right, #1f163b 0%, var(--bg) 58%);
+  background: radial-gradient(circle at top right, #3a2e0b 0%, var(--bg) 58%);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -70,6 +70,7 @@ body {
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.15;
+  color: #facc15;
 }
 
 .status-pill {
@@ -175,10 +176,10 @@ body {
 }
 
 .fav-btn.is-active {
-  background: linear-gradient(135deg, #7c3aed, #5b21b6);
-  border-color: #c4b5fd;
-  color: #ffffff;
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.42);
+  background: linear-gradient(135deg, #facc15, #ca8a04);
+  border-color: #fef08a;
+  color: #0b0b14;
+  box-shadow: 0 6px 16px rgba(234, 179, 8, 0.42);
 }
 
 .presets-row {
