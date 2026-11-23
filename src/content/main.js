@@ -211,14 +211,9 @@
     settings = next;
 
     const speedChanged = Math.abs(next.speed - prevSettings.speed) > 0.001;
-    const rememberChanged = next.rememberSpeed !== prevSettings.rememberSpeed;
 
-    if (controller) {
-      if (next.rememberSpeed && speedChanged) {
-        controller.setSpeed(next.speed);
-      } else if (rememberChanged) {
-        controller.setSpeed(next.rememberSpeed ? next.speed : 1.0);
-      }
+    if (controller && next.rememberSpeed && speedChanged) {
+      controller.setSpeed(next.speed);
     }
     syncOverlay(false);
   }
@@ -248,15 +243,10 @@
     }
 
     if (message.type === 'UPDATE_SETTINGS') {
-      const merged = normalizeSettings({
+      settings = normalizeSettings({
         ...settings,
         ...(message.settings || {}),
       });
-      const speedToApply = merged.rememberSpeed ? merged.speed : 1.0;
-      settings = merged;
-      if (controller) {
-        controller.setSpeed(speedToApply);
-      }
       syncOverlay(false);
       persistSettings(settings).then(() => {
         sendResponse(buildStateResponse());

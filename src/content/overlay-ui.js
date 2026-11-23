@@ -61,6 +61,10 @@
       pointer-events: none;
     }
 
+    .dock.is-hidden {
+      display: none;
+    }
+
     .pill {
       display: inline-flex;
       align-items: center;
@@ -318,14 +322,16 @@
     }
 
     showToast(speed) {
-      if (!this.hasVideo || !this.visible) {
+      if (!this.hasVideo) {
         return;
       }
       this._ensureMounted();
       const formatted = formatSpeed(speed !== undefined ? speed : this.speed);
       this._toast.textContent = formatted;
       this._toast.classList.add('is-visible');
-      this._wake();
+      if (this.visible) {
+        this._wake();
+      }
 
       if (this._toastTimer) {
         this.win.clearTimeout(this._toastTimer);
@@ -571,8 +577,8 @@
     }
 
     _render() {
-      const shouldShow = this.hasVideo && this.visible;
-      this._root.classList.toggle('is-hidden', !shouldShow);
+      this._root.classList.toggle('is-hidden', !this.hasVideo);
+      this._dock.classList.toggle('is-hidden', !this.visible);
       this._dock.classList.toggle('is-open', this.isOpen);
 
       const formatted = formatSpeed(this.speed);
