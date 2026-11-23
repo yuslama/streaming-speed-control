@@ -47,9 +47,16 @@
     }
   }
 
+  function withTimeout(promise, ms, fallback) {
+    return Promise.race([
+      promise,
+      new Promise((resolve) => setTimeout(() => resolve(fallback), ms)),
+    ]);
+  }
+
   async function loadSettings() {
     try {
-      const result = await chrome.storage.sync.get(STORAGE_KEY);
+      const result = await withTimeout(chrome.storage.sync.get(STORAGE_KEY), 600, null);
       if (result && result[STORAGE_KEY]) {
         return normalizeSettings(result[STORAGE_KEY]);
       }
@@ -58,7 +65,7 @@
     }
 
     try {
-      const localResult = await chrome.storage.local.get(STORAGE_KEY);
+      const localResult = await withTimeout(chrome.storage.local.get(STORAGE_KEY), 600, null);
       if (localResult && localResult[STORAGE_KEY]) {
         return normalizeSettings(localResult[STORAGE_KEY]);
       }
@@ -263,6 +270,10 @@
   }
 
   async function init() {
+    window.addEventListener('keydown', handleKeyDown, true);
+    chrome.storage.onChanged.addListener(handleStorageChanged);
+    chrome.runtime.onMessage.addListener(handleRuntimeMessage);
+
     settings = await loadSettings();
     const initialSpeed = settings.rememberSpeed ? settings.speed : 1.0;
 
@@ -295,10 +306,6 @@
     controller.start();
     syncOverlay(false);
     notifyBackground(controller.getSpeed(), controller.hasQualifyingVideo());
-
-    window.addEventListener('keydown', handleKeyDown, true);
-    chrome.storage.onChanged.addListener(handleStorageChanged);
-    chrome.runtime.onMessage.addListener(handleRuntimeMessage);
   }
 
   init();

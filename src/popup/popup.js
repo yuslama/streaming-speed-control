@@ -36,9 +36,16 @@
   let settings = normalizeSettings(DEFAULT_SETTINGS);
   let currentSpeed = settings.speed;
 
+  function withTimeout(promise, ms, fallback) {
+    return Promise.race([
+      promise,
+      new Promise((resolve) => setTimeout(() => resolve(fallback), ms)),
+    ]);
+  }
+
   async function loadStoredSettings() {
     try {
-      const result = await chrome.storage.sync.get(STORAGE_KEY);
+      const result = await withTimeout(chrome.storage.sync.get(STORAGE_KEY), 600, null);
       if (result && result[STORAGE_KEY]) {
         return normalizeSettings(result[STORAGE_KEY]);
       }
@@ -46,7 +53,7 @@
       // Fallback to local storage.
     }
     try {
-      const localResult = await chrome.storage.local.get(STORAGE_KEY);
+      const localResult = await withTimeout(chrome.storage.local.get(STORAGE_KEY), 600, null);
       if (localResult && localResult[STORAGE_KEY]) {
         return normalizeSettings(localResult[STORAGE_KEY]);
       }
@@ -280,6 +287,15 @@
         }
       }
 
+      if (!activeTab || !isSupportedHost(activeTab.url || '')) {
+        const anyHboTabs = await chrome.tabs.query({
+          url: ['https://*.hbomax.com/*', 'https://*.max.com/*'],
+        });
+        if (anyHboTabs && anyHboTabs.length > 0) {
+          activeTab = anyHboTabs.find((t) => t.audible) || anyHboTabs[0];
+        }
+      }
+
       if (activeTab && typeof activeTab.id === 'number') {
         activeTabId = activeTab.id;
         activeTabSupported = isSupportedHost(activeTab.url || '');
@@ -324,5 +340,8 @@
     render();
   }
 
-  init();
+  init().catch((err) => {
+    activeTabDebug = err && err.message ? err.message.slice(0, 32) : 'init error';
+    render();
+  });
 })();
