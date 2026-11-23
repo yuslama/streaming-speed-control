@@ -45,17 +45,17 @@
 
   async function loadStoredSettings() {
     try {
-      const result = await withTimeout(chrome.storage.sync.get(STORAGE_KEY), 600, null);
-      if (result && result[STORAGE_KEY]) {
-        return normalizeSettings(result[STORAGE_KEY]);
-      }
-    } catch {
-      // Fallback to local storage.
-    }
-    try {
       const localResult = await withTimeout(chrome.storage.local.get(STORAGE_KEY), 600, null);
       if (localResult && localResult[STORAGE_KEY]) {
         return normalizeSettings(localResult[STORAGE_KEY]);
+      }
+    } catch {
+      // Fallback to sync storage.
+    }
+    try {
+      const result = await withTimeout(chrome.storage.sync.get(STORAGE_KEY), 600, null);
+      if (result && result[STORAGE_KEY]) {
+        return normalizeSettings(result[STORAGE_KEY]);
       }
     } catch {
       // Ignore storage read failures.
@@ -67,19 +67,28 @@
     const normalized = normalizeSettings(nextSettings);
     const payload = { [STORAGE_KEY]: normalized };
     try {
-      await chrome.storage.sync.set(payload);
+      await withTimeout(chrome.storage.local.set(payload), 600, null);
     } catch {
-      try {
-        await chrome.storage.local.set(payload);
-      } catch {
-        // Ignore storage write failures.
-      }
+      // Ignore local storage write failures.
+    }
+    try {
+      await withTimeout(chrome.storage.sync.set(payload), 600, null);
+    } catch {
+      // Sync storage may be unavailable in de-Googled Chromium browsers.
     }
   }
 
   async function sendTabMessage(tabId, message) {
     try {
-      return await chrome.tabs.sendMessage(tabId, message);
+      return await withTimeout(chrome.tabs.sendMessage(tabId, message), 800, null);
+    } catch {
+      return null;
+    }
+  }
+
+  async function sendRuntimeMessage(message) {
+    try {
+      return await withTimeout(chrome.runtime.sendMessage(message), 800, null);
     } catch {
       return null;
     }
@@ -90,11 +99,6 @@
       return false;
     }
     try {
-      await chrome.scripting.executeScript({
-        target: { tabId, allFrames: true },
-        world: 'MAIN',
-        files: ['src/content/page-hook.js'],
-      });
       await chrome.scripting.executeScript({
         target: { tabId, allFrames: true },
         files: [
@@ -171,13 +175,15 @@
     });
     render();
 
+    await saveStoredSettings(settings);
+
     if (activeTabSupported && activeTabId !== null) {
       let response = await sendTabMessage(activeTabId, {
         type: 'SET_SPEED',
         speed: next,
       });
       if (!response && (await ensureContentScriptsInjected(activeTabId))) {
-        await new Promise((resolve) => setTimeout(resolve, 80));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         response = await sendTabMessage(activeTabId, {
           type: 'SET_SPEED',
           speed: next,
@@ -193,7 +199,15 @@
       }
     }
 
-    await saveStoredSettings(settings);
+    const broadcast = await sendRuntimeMessage({ type: 'BROADCAST_SPEED', speed: next });
+    if (broadcast && Array.isArray(broadcast.results) && broadcast.results.length > 0) {
+      const hit = broadcast.results.find((r) => r.hasVideo) || broadcast.results[0];
+      activeTabId = hit.tabId;
+      activeTabSupported = true;
+      activeTabDebug = '';
+      hasVideo = Boolean(hit.hasVideo);
+      render();
+    }
   }
 
   async function applySettingPatch(patch) {
@@ -202,6 +216,8 @@
       ...patch,
     });
     render();
+
+    await saveStoredSettings(settings);
 
     if (activeTabSupported && activeTabId !== null) {
       const response = await sendTabMessage(activeTabId, {
@@ -217,11 +233,8 @@
           settings = normalizeSettings(response.settings);
         }
         render();
-        return;
       }
     }
-
-    await saveStoredSettings(settings);
   }
 
   function bindEvents() {
@@ -259,6 +272,80 @@
     });
   }
 
+  function extractHostLabel(url) {
+    if (!url) {
+      return 'no-url';
+    }
+    try {
+      return new URL(url).hostname || url.slice(0, 24);
+    } catch {
+      return url.slice(0, 24);
+    }
+  }
+
+  async function discoverTargetTab() {
+    // 1. Check tabs already registered by our content script in the background worker.
+    const trackedResp = await sendRuntimeMessage({ type: 'GET_TRACKED_TABS' });
+    const tracked =
+      trackedResp && Array.isArray(trackedResp.tabs) ? trackedResp.tabs : [];
+
+    for (let i = 0; i < tracked.length; i += 1) {
+      const entry = tracked[i];
+      if (typeof entry.tabId !== 'number') {
+        continue;
+      }
+      const state = await sendTabMessage(entry.tabId, { type: 'GET_STATE' });
+      if (state) {
+        return { tabId: entry.tabId, supported: true, state };
+      }
+    }
+
+    // 2. Query ALL tabs unfiltered (works reliably across Chromium forks like Ardia/Arc).
+    const allTabs = (await withTimeout(chrome.tabs.query({}), 800, [])) || [];
+    const hboTabs = allTabs.filter((t) => typeof t.id === 'number' && isSupportedHost(t.url || ''));
+
+    if (hboTabs.length > 0) {
+      const preferred =
+        hboTabs.find((t) => t.active && t.audible) ||
+        hboTabs.find((t) => t.active) ||
+        hboTabs.find((t) => t.audible) ||
+        hboTabs[0];
+
+      let state = await sendTabMessage(preferred.id, { type: 'GET_STATE' });
+      if (!state && (await ensureContentScriptsInjected(preferred.id))) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        state = await sendTabMessage(preferred.id, { type: 'GET_STATE' });
+      }
+      return { tabId: preferred.id, supported: true, state };
+    }
+
+    // 3. Probe active/recent tabs even if their reported tab.url isn't hbomax.com (e.g. shell URLs).
+    const ordered = [...allTabs].sort((a, b) => Number(Boolean(b.active)) - Number(Boolean(a.active)));
+    const probeLimit = Math.min(ordered.length, 8);
+    for (let i = 0; i < probeLimit; i += 1) {
+      const tab = ordered[i];
+      if (!tab || typeof tab.id !== 'number') {
+        continue;
+      }
+      const state = await sendTabMessage(tab.id, { type: 'GET_STATE' });
+      if (state) {
+        return { tabId: tab.id, supported: true, state };
+      }
+    }
+
+    if (ordered.length === 0) {
+      return { tabId: null, supported: false, state: null, debug: 'no tabs' };
+    }
+
+    const hosts = Array.from(new Set(ordered.slice(0, 3).map((t) => extractHostLabel(t.url)))).join(', ');
+    return {
+      tabId: ordered[0].id,
+      supported: false,
+      state: null,
+      debug: `${ordered.length}t: ${hosts}`,
+    };
+  }
+
   async function init() {
     buildPresetButtons();
     bindEvents();
@@ -267,81 +354,29 @@
     currentSpeed = settings.rememberSpeed ? settings.speed : 1.0;
 
     try {
-      let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      let activeTab = tabs && tabs[0];
+      const found = await discoverTargetTab();
+      activeTabId = found.tabId;
+      activeTabSupported = Boolean(found.supported);
+      activeTabDebug = found.debug || '';
 
-      if (!activeTab || !isSupportedHost(activeTab.url || '')) {
-        const lastFocused = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-        if (lastFocused && lastFocused[0] && isSupportedHost(lastFocused[0].url || '')) {
-          activeTab = lastFocused[0];
+      if (found.state) {
+        hasVideo = Boolean(found.state.hasVideo);
+        if (typeof found.state.speed === 'number') {
+          currentSpeed = clampSpeed(found.state.speed);
+        }
+        if (found.state.settings) {
+          settings = normalizeSettings(found.state.settings);
         }
       }
-
-      if (!activeTab || !isSupportedHost(activeTab.url || '')) {
-        const hboTabs = await chrome.tabs.query({
-          active: true,
-          url: ['https://*.hbomax.com/*', 'https://*.max.com/*'],
-        });
-        if (hboTabs && hboTabs[0]) {
-          activeTab = hboTabs[0];
-        }
-      }
-
-      if (!activeTab || !isSupportedHost(activeTab.url || '')) {
-        const anyHboTabs = await chrome.tabs.query({
-          url: ['https://*.hbomax.com/*', 'https://*.max.com/*'],
-        });
-        if (anyHboTabs && anyHboTabs.length > 0) {
-          activeTab = anyHboTabs.find((t) => t.audible) || anyHboTabs[0];
-        }
-      }
-
-      if (activeTab && typeof activeTab.id === 'number') {
-        activeTabId = activeTab.id;
-        activeTabSupported = isSupportedHost(activeTab.url || '');
-
-        if (!activeTabSupported) {
-          if (!activeTab.url) {
-            activeTabDebug = 'no tab URL — reload tab';
-          } else {
-            try {
-              activeTabDebug = new URL(activeTab.url).hostname || activeTab.url;
-            } catch {
-              activeTabDebug = 'unsupported tab';
-            }
-          }
-        }
-
-        if (activeTabSupported || !activeTab.url) {
-          let state = await sendTabMessage(activeTabId, { type: 'GET_STATE' });
-          if (!state && activeTabSupported && (await ensureContentScriptsInjected(activeTabId))) {
-            await new Promise((resolve) => setTimeout(resolve, 80));
-            state = await sendTabMessage(activeTabId, { type: 'GET_STATE' });
-          }
-          if (state) {
-            activeTabSupported = true;
-            activeTabDebug = '';
-            hasVideo = Boolean(state.hasVideo);
-            if (typeof state.speed === 'number') {
-              currentSpeed = clampSpeed(state.speed);
-            }
-            if (state.settings) {
-              settings = normalizeSettings(state.settings);
-            }
-          }
-        }
-      } else {
-        activeTabDebug = 'no active tab';
-      }
-    } catch {
-      activeTabDebug = 'tab query error';
+    } catch (err) {
+      activeTabDebug = err && err.message ? err.message.slice(0, 28) : 'tab query error';
     }
 
     render();
   }
 
   init().catch((err) => {
-    activeTabDebug = err && err.message ? err.message.slice(0, 32) : 'init error';
+    activeTabDebug = err && err.message ? err.message.slice(0, 28) : 'init error';
     render();
   });
 })();

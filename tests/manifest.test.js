@@ -14,15 +14,12 @@ test('manifest.json is valid MV3 and all referenced files exist', () => {
   assert.deepEqual(manifest.permissions, ['storage', 'activeTab', 'tabs', 'scripting']);
   assert.ok(manifest.action && manifest.action.default_popup);
   assert.ok(manifest.background && manifest.background.service_worker);
-  assert.ok(Array.isArray(manifest.content_scripts) && manifest.content_scripts.length === 2);
+  assert.ok(Array.isArray(manifest.content_scripts) && manifest.content_scripts.length === 1);
 
-  const [mainWorldCs, isolatedCs] = manifest.content_scripts;
-  assert.equal(mainWorldCs.world, 'MAIN');
-  assert.equal(mainWorldCs.run_at, 'document_start');
-  assert.equal(mainWorldCs.all_frames, true);
-  assert.ok(mainWorldCs.matches.includes('https://*.hbomax.com/*'));
-
+  const [isolatedCs] = manifest.content_scripts;
+  assert.ok(isolatedCs.matches.includes('https://www.hbomax.com/*'));
   assert.ok(isolatedCs.matches.includes('https://*.hbomax.com/*'));
+  assert.ok(isolatedCs.matches.includes('https://www.max.com/*'));
   assert.ok(isolatedCs.matches.includes('https://*.max.com/*'));
   assert.equal(isolatedCs.run_at, 'document_idle');
   assert.equal(isolatedCs.all_frames, true);
@@ -30,7 +27,6 @@ test('manifest.json is valid MV3 and all referenced files exist', () => {
   const filesToCheck = [
     manifest.action.default_popup,
     manifest.background.service_worker,
-    ...mainWorldCs.js,
     ...isolatedCs.js,
     ...Object.values(manifest.icons),
     ...Object.values(manifest.action.default_icon),
