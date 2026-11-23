@@ -56,18 +56,18 @@
 
   async function loadSettings() {
     try {
-      const result = await withTimeout(chrome.storage.sync.get(STORAGE_KEY), 600, null);
-      if (result && result[STORAGE_KEY]) {
-        return normalizeSettings(result[STORAGE_KEY]);
-      }
-    } catch {
-      // Fallback to local storage when sync is unavailable.
-    }
-
-    try {
       const localResult = await withTimeout(chrome.storage.local.get(STORAGE_KEY), 600, null);
       if (localResult && localResult[STORAGE_KEY]) {
         return normalizeSettings(localResult[STORAGE_KEY]);
+      }
+    } catch {
+      // Fallback to sync storage when local fails.
+    }
+
+    try {
+      const result = await withTimeout(chrome.storage.sync.get(STORAGE_KEY), 600, null);
+      if (result && result[STORAGE_KEY]) {
+        return normalizeSettings(result[STORAGE_KEY]);
       }
     } catch {
       // Ignore storage read failures.
@@ -81,13 +81,14 @@
     const payload = { [STORAGE_KEY]: normalized };
 
     try {
-      await chrome.storage.sync.set(payload);
+      await withTimeout(chrome.storage.local.set(payload), 600, null);
     } catch {
-      try {
-        await chrome.storage.local.set(payload);
-      } catch {
-        // Ignore storage write failures.
-      }
+      // Ignore local storage write failures.
+    }
+    try {
+      await withTimeout(chrome.storage.sync.set(payload), 600, null);
+    } catch {
+      // Sync storage may be unavailable in de-Googled Chromium browsers.
     }
   }
 
@@ -121,6 +122,7 @@
       type: 'SPEED_STATE_UPDATED',
       speed,
       hasVideo,
+      url: window.location ? window.location.href : '',
     });
   }
 
@@ -218,16 +220,16 @@
     if (!changes || !changes[STORAGE_KEY]) {
       return;
     }
-    const prevSettings = settings;
+    const prevSpeed = controller ? controller.getSpeed() : settings.speed;
     const next = normalizeSettings(changes[STORAGE_KEY].newValue);
     settings = next;
 
-    const speedChanged = Math.abs(next.speed - prevSettings.speed) > 0.001;
+    const speedChanged = Math.abs(next.speed - prevSpeed) > 0.001;
 
-    if (controller && next.rememberSpeed && speedChanged) {
+    if (controller && speedChanged) {
       controller.setSpeed(next.speed);
     }
-    syncOverlay(false);
+    syncOverlay(speedChanged);
   }
 
   function handleRuntimeMessage(message, _sender, sendResponse) {

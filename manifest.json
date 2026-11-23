@@ -11,10 +11,14 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://*.hbomax.com/*",
+    "https://www.hbomax.com/*",
+    "https://play.hbomax.com/*",
     "https://hbomax.com/*",
-    "https://*.max.com/*",
-    "https://max.com/*"
+    "https://*.hbomax.com/*",
+    "https://www.max.com/*",
+    "https://play.max.com/*",
+    "https://max.com/*",
+    "https://*.max.com/*"
   ],
   "icons": {
     "16": "icons/icon16.png",
@@ -38,24 +42,14 @@
   "content_scripts": [
     {
       "matches": [
-        "https://*.hbomax.com/*",
+        "https://www.hbomax.com/*",
+        "https://play.hbomax.com/*",
         "https://hbomax.com/*",
-        "https://*.max.com/*",
-        "https://max.com/*"
-      ],
-      "js": [
-        "src/content/page-hook.js"
-      ],
-      "run_at": "document_start",
-      "world": "MAIN",
-      "all_frames": true
-    },
-    {
-      "matches": [
         "https://*.hbomax.com/*",
-        "https://hbomax.com/*",
-        "https://*.max.com/*",
-        "https://max.com/*"
+        "https://www.max.com/*",
+        "https://play.max.com/*",
+        "https://max.com/*",
+        "https://*.max.com/*"
       ],
       "js": [
         "src/shared/speed-utils.js",
