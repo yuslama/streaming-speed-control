@@ -127,6 +127,10 @@
       return true;
     }
 
+    if (!video.paused && !video.ended && Boolean(video.currentSrc || video.src)) {
+      return true;
+    }
+
     return false;
   }
 
@@ -144,12 +148,14 @@
 
       this._started = false;
       this._hasVideo = false;
+      this._hookHasVideo = false;
       this._lastReportedSpeed = this.targetSpeed;
       this._mutationObserver = null;
       this._reconcileTimer = null;
       this._scanTimer = null;
 
       this._onDocMediaEvent = this._handleDocumentMediaEvent.bind(this);
+      this._onHookState = this._handleHookState.bind(this);
     }
 
     getSpeed() {
@@ -157,12 +163,13 @@
     }
 
     hasQualifyingVideo() {
-      return this._hasVideo;
+      return this._hasVideo || this._hookHasVideo;
     }
 
     setSpeed(speed) {
       const next = clampSpeed(speed);
       this.targetSpeed = next;
+      this._postHookCommand({ type: 'SET_SPEED', speed: next });
       const videos = this._discoverVideos();
       for (let i = 0; i < videos.length; i += 1) {
         this._attachVideo(videos[i]);
@@ -195,6 +202,8 @@
       for (let i = 0; i < mediaEvents.length; i += 1) {
         this.doc.addEventListener(mediaEvents[i], this._onDocMediaEvent, true);
       }
+      this.doc.addEventListener('hbomax-speed-hook-state', this._onHookState);
+      this._postHookCommand({ type: 'SET_SPEED', speed: this.targetSpeed });
 
       const Observer =
         (this.win && this.win.MutationObserver) ||
@@ -234,6 +243,7 @@
         for (let i = 0; i < mediaEvents.length; i += 1) {
           this.doc.removeEventListener(mediaEvents[i], this._onDocMediaEvent, true);
         }
+        this.doc.removeEventListener('hbomax-speed-hook-state', this._onHookState);
       }
 
       if (this._mutationObserver) {
@@ -420,14 +430,52 @@
       }
     }
 
+    _postHookCommand(payload) {
+      if (!this.doc || typeof this.doc.dispatchEvent !== 'function') {
+        return;
+      }
+      const CustomEventCtor =
+        (this.win && this.win.CustomEvent) ||
+        (typeof CustomEvent !== 'undefined' ? CustomEvent : null);
+      if (!CustomEventCtor) {
+        return;
+      }
+      try {
+        this.doc.dispatchEvent(
+          new CustomEventCtor('hbomax-speed-command', {
+            detail: JSON.stringify(payload),
+          })
+        );
+      } catch {
+        // Ignore in restricted or mocked environments.
+      }
+    }
+
+    _handleHookState(event) {
+      if (!event || typeof event.detail !== 'string') {
+        return;
+      }
+      try {
+        const payload = JSON.parse(event.detail);
+        if (payload && typeof payload.hasVideo === 'boolean') {
+          this._hookHasVideo = payload.hasVideo;
+          this._updateHasVideo(this._discoverVideos(), false);
+        }
+      } catch {
+        // Ignore malformed event payloads.
+      }
+    }
+
     _updateHasVideo(videos, forceNotify) {
-      let hasVideo = false;
-      for (let i = 0; i < videos.length; i += 1) {
-        const video = videos[i];
-        const connected = video.isConnected !== false;
-        if (connected && isQualifyingPlayerVideo(video, this.win, this.doc)) {
-          hasVideo = true;
-          break;
+      let hasVideo = this._hookHasVideo;
+      if (!hasVideo) {
+        for (let i = 0; i < videos.length; i += 1) {
+          const video = videos[i];
+          const connected = video.isConnected !== false;
+          if (connected && isQualifyingPlayerVideo(video, this.win, this.doc)) {
+            hasVideo = true;
+            break;
+          }
         }
       }
 
