@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HBO Max Playback Speed</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <header class="header">
+        <div class="brand">
+          <img class="brand-icon" src="../../icons/icon32.png" alt="HBO Max Speed icon" width="28" height="28" />
+          <div class="brand-text">
+            <h1 class="title">HBO Max Speed</h1>
+            <div class="status-pill" id="status-pill">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span id="status-text">Saved for HBO Max</span>
+            </div>
+          </div>
+        </div>
+        <div class="live-speed" id="live-speed" aria-live="polite">1.0x</div>
+      </header>
+
+      <section class="section" aria-label="Favorite speeds">
+        <div class="section-header">
+          <span class="section-title">Favorites</span>
+          <span class="section-meta">Alt+2 – Alt+5</span>
+        </div>
+        <div class="favorites-grid" id="favorites-grid"></div>
+      </section>
+
+      <section class="section" aria-label="Other presets">
+        <div class="section-header">
+          <span class="section-title">More Presets</span>
+        </div>
+        <div class="presets-row" id="other-presets-row"></div>
+      </section>
+
+      <section class="section custom-card" aria-label="Custom speed">
+        <div class="section-header">
+          <span class="section-title">Fine Tune</span>
+          <button type="button" class="reset-btn" id="reset-btn">Reset 1.0x</button>
+        </div>
+        <div class="slider-row">
+          <button type="button" class="nudge-btn" id="step-down-btn" title="Decrease by 0.05x">−</button>
+          <input
+            type="range"
+            id="speed-slider"
+            class="speed-slider"
+            min="0.25"
+            max="4"
+            step="0.05"
+            value="1"
+            aria-label="Custom playback speed"
+          />
+          <button type="button" class="nudge-btn" id="step-up-btn" title="Increase by 0.05x">+</button>
+        </div>
+        <div class="slider-scale">
+          <span>0.25x</span>
+          <span>1.0x</span>
+          <span>2.0x</span>
+          <span>4.0x</span>
+        </div>
+      </section>
+
+      <section class="section settings-card" aria-label="Preferences">
+        <label class="toggle-row" for="toggle-remember">
+          <span class="toggle-label">Remember speed across episodes</span>
+          <input type="checkbox" id="toggle-remember" class="toggle-input" />
+          <span class="toggle-switch" aria-hidden="true"></span>
+        </label>
+        <label class="toggle-row" for="toggle-overlay">
+          <span class="toggle-label">Show on-player overlay</span>
+          <input type="checkbox" id="toggle-overlay" class="toggle-input" />
+          <span class="toggle-switch" aria-hidden="true"></span>
+        </label>
+        <label class="toggle-row" for="toggle-keyboard">
+          <span class="toggle-label">Keyboard shortcuts</span>
+          <input type="checkbox" id="toggle-keyboard" class="toggle-input" />
+          <span class="toggle-switch" aria-hidden="true"></span>
+        </label>
+      </section>
+
+      <footer class="footer">
+        <code>[</code> / <code>]</code> step &bull; <code>\</code> toggle <code>1.0x</code> &bull;
+        <code>Alt+1–5</code> quick speeds (<code>1.0x</code>–<code>2.0x</code>)
+      </footer>
+    </main>
+
+    <script src="../shared/speed-utils.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

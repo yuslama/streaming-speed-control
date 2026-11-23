@@ -1,0 +1,11 @@
+{
+  "name": "hbomax-playback-speed",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zero-build Manifest V3 Chrome Extension for controlling video playback speed on HBO Max.",
+  "scripts": {
+    "icons": "node scripts/generate-icons.mjs",
+    "check": "node --check src/shared/speed-utils.js && node --check src/content/video-controller.js && node --check src/content/overlay-ui.js && node --check src/content/main.js && node --check src/popup/popup.js && node --check src/background/service-worker.js && node --check scripts/generate-icons.mjs",
+    "test": "node --test tests/*.test.js"
+  }
+}

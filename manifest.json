@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "HBO Max Playback Speed Controller",
+  "short_name": "HBO Max Speed",
+  "version": "1.0.0",
+  "description": "Control playback speed on HBO Max (1.25x, 1.50x, 1.75x, 2.0x & custom) with an on-player overlay, popup, and keyboard shortcuts.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "HBO Max Playback Speed",
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.hbomax.com/*",
+        "https://play.hbomax.com/*",
+        "https://hbomax.com/*",
+        "https://www.max.com/*",
+        "https://play.max.com/*",
+        "https://max.com/*"
+      ],
+      "js": [
+        "src/shared/speed-utils.js",
+        "src/content/video-controller.js",
+        "src/content/overlay-ui.js",
+        "src/content/main.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}
