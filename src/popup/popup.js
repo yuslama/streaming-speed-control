@@ -31,6 +31,7 @@
 
   let activeTabId = null;
   let activeTabSupported = false;
+  let activeTabDebug = '';
   let hasVideo = false;
   let settings = normalizeSettings(DEFAULT_SETTINGS);
   let currentSpeed = settings.speed;
@@ -122,7 +123,9 @@
       statusPill.classList.add('is-ready');
       statusText.textContent = 'Ready on HBO Max';
     } else {
-      statusText.textContent = 'Saved for HBO Max';
+      statusText.textContent = activeTabDebug
+        ? `Saved (${activeTabDebug})`
+        : 'Saved for HBO Max';
     }
   }
 
@@ -234,10 +237,23 @@
         activeTabId = activeTab.id;
         activeTabSupported = isSupportedHost(activeTab.url || '');
 
+        if (!activeTabSupported) {
+          if (!activeTab.url) {
+            activeTabDebug = 'no tab URL — reload tab';
+          } else {
+            try {
+              activeTabDebug = new URL(activeTab.url).hostname || activeTab.url;
+            } catch {
+              activeTabDebug = 'unsupported tab';
+            }
+          }
+        }
+
         if (activeTabSupported || !activeTab.url) {
           const state = await sendTabMessage(activeTabId, { type: 'GET_STATE' });
           if (state) {
             activeTabSupported = true;
+            activeTabDebug = '';
             hasVideo = Boolean(state.hasVideo);
             if (typeof state.speed === 'number') {
               currentSpeed = clampSpeed(state.speed);
@@ -247,9 +263,11 @@
             }
           }
         }
+      } else {
+        activeTabDebug = 'no active tab';
       }
     } catch {
-      // Ignore tab query errors when popup opens outside normal tab context.
+      activeTabDebug = 'tab query error';
     }
 
     render();
