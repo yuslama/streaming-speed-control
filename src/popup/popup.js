@@ -225,7 +225,10 @@
     currentSpeed = settings.rememberSpeed ? settings.speed : 1.0;
 
     try {
-      const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tabs || tabs.length === 0) {
+        tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      }
       const activeTab = tabs && tabs[0];
       if (activeTab && typeof activeTab.id === 'number') {
         activeTabId = activeTab.id;
