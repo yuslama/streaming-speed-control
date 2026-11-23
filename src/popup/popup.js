@@ -78,6 +78,31 @@
     }
   }
 
+  async function ensureContentScriptsInjected(tabId) {
+    if (!chrome.scripting || typeof chrome.scripting.executeScript !== 'function') {
+      return false;
+    }
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId, allFrames: true },
+        world: 'MAIN',
+        files: ['src/content/page-hook.js'],
+      });
+      await chrome.scripting.executeScript({
+        target: { tabId, allFrames: true },
+        files: [
+          'src/shared/speed-utils.js',
+          'src/content/video-controller.js',
+          'src/content/overlay-ui.js',
+          'src/content/main.js',
+        ],
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function buildPresetButtons() {
     FAVORITE_PRESETS.forEach((rate) => {
       const btn = document.createElement('button');
@@ -140,10 +165,17 @@
     render();
 
     if (activeTabSupported && activeTabId !== null) {
-      const response = await sendTabMessage(activeTabId, {
+      let response = await sendTabMessage(activeTabId, {
         type: 'SET_SPEED',
         speed: next,
       });
+      if (!response && (await ensureContentScriptsInjected(activeTabId))) {
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        response = await sendTabMessage(activeTabId, {
+          type: 'SET_SPEED',
+          speed: next,
+        });
+      }
       if (response) {
         hasVideo = Boolean(response.hasVideo);
         if (response.settings) {
@@ -229,10 +261,25 @@
 
     try {
       let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tabs || tabs.length === 0) {
-        tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      let activeTab = tabs && tabs[0];
+
+      if (!activeTab || !isSupportedHost(activeTab.url || '')) {
+        const lastFocused = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+        if (lastFocused && lastFocused[0] && isSupportedHost(lastFocused[0].url || '')) {
+          activeTab = lastFocused[0];
+        }
       }
-      const activeTab = tabs && tabs[0];
+
+      if (!activeTab || !isSupportedHost(activeTab.url || '')) {
+        const hboTabs = await chrome.tabs.query({
+          active: true,
+          url: ['https://*.hbomax.com/*', 'https://*.max.com/*'],
+        });
+        if (hboTabs && hboTabs[0]) {
+          activeTab = hboTabs[0];
+        }
+      }
+
       if (activeTab && typeof activeTab.id === 'number') {
         activeTabId = activeTab.id;
         activeTabSupported = isSupportedHost(activeTab.url || '');
@@ -250,7 +297,11 @@
         }
 
         if (activeTabSupported || !activeTab.url) {
-          const state = await sendTabMessage(activeTabId, { type: 'GET_STATE' });
+          let state = await sendTabMessage(activeTabId, { type: 'GET_STATE' });
+          if (!state && activeTabSupported && (await ensureContentScriptsInjected(activeTabId))) {
+            await new Promise((resolve) => setTimeout(resolve, 80));
+            state = await sendTabMessage(activeTabId, { type: 'GET_STATE' });
+          }
           if (state) {
             activeTabSupported = true;
             activeTabDebug = '';

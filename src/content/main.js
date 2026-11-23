@@ -1,6 +1,11 @@
 (function () {
   'use strict';
 
+  if (globalThis.__hboMaxSpeedMainInstalled) {
+    return;
+  }
+  globalThis.__hboMaxSpeedMainInstalled = true;
+
   const utils = globalThis.HboMaxSpeedUtils;
   const controllerLib = globalThis.HboMaxVideoController;
   const overlayLib = globalThis.HboMaxOverlayUI;

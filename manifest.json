@@ -6,7 +6,9 @@
   "description": "Control playback speed on HBO Max (1.25x, 1.50x, 1.75x, 2.0x & custom) with an on-player overlay, popup, and keyboard shortcuts.",
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "tabs",
+    "scripting"
   ],
   "host_permissions": [
     "https://*.hbomax.com/*",

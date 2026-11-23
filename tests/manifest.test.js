@@ -11,7 +11,7 @@ test('manifest.json is valid MV3 and all referenced files exist', () => {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
   assert.equal(manifest.manifest_version, 3);
-  assert.deepEqual(manifest.permissions, ['storage', 'activeTab']);
+  assert.deepEqual(manifest.permissions, ['storage', 'activeTab', 'tabs', 'scripting']);
   assert.ok(manifest.action && manifest.action.default_popup);
   assert.ok(manifest.background && manifest.background.service_worker);
   assert.ok(Array.isArray(manifest.content_scripts) && manifest.content_scripts.length === 2);
