@@ -225,15 +225,16 @@
     currentSpeed = settings.rememberSpeed ? settings.speed : 1.0;
 
     try {
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
       const activeTab = tabs && tabs[0];
       if (activeTab && typeof activeTab.id === 'number') {
         activeTabId = activeTab.id;
         activeTabSupported = isSupportedHost(activeTab.url || '');
 
-        if (activeTabSupported) {
+        if (activeTabSupported || !activeTab.url) {
           const state = await sendTabMessage(activeTabId, { type: 'GET_STATE' });
           if (state) {
+            activeTabSupported = true;
             hasVideo = Boolean(state.hasVideo);
             if (typeof state.speed === 'number') {
               currentSpeed = clampSpeed(state.speed);
