@@ -8,11 +8,11 @@ web
 
 ## Users
 
-People watching streaming services (HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+, Peacock) in a Chromium desktop browser who want to watch faster (or slower) than the player allows. They open the popup or glance at the on-player overlay mid-episode, usually in a dim room, change the speed, and go back to watching. Most visits last a few seconds.
+People watching streaming services (HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+, Peacock, Apple TV) in a Chromium desktop browser who want to watch faster (or slower) than the player allows. They open the popup or glance at the on-player overlay mid-episode, usually in a dim room, change the speed, and go back to watching. Most visits last a few seconds.
 
 ## Product Purpose
 
-A Manifest V3 browser extension that sets playback speed on HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+ and Peacock from 0.25x to 4.0x. The service list lives in `SERVICES` in `src/shared/speed-utils.js`. Success: the user changes speed in one click and the speed sticks across episodes and player resets.
+A Manifest V3 browser extension that sets playback speed on HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+, Peacock and Apple TV from 0.25x to 4.0x. The service list lives in `SERVICES` in `src/shared/speed-utils.js`. Success: the user changes speed in one click and the speed sticks across episodes and player resets.
 
 ## Positioning
 

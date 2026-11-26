@@ -4,7 +4,7 @@
 
 # Streaming Speed Control
 
-**Watch HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+ and Peacock at 1.25x, 1.5x, 1.75x, 2x, or any speed from 0.25x to 4x.**<br />
+**Watch HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+, Peacock and Apple TV at 1.25x, 1.5x, 1.75x, 2x, or any speed from 0.25x to 4x.**<br />
 A free, open-source browser extension that adds the speed control your streaming player is missing.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-2563EB.svg)](LICENSE)
@@ -26,7 +26,7 @@ This extension adds one speed control that works the same way on all of them. Cl
 
 ## Supported services
 
-<img src="docs/images/services.png" alt="HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+ and Peacock" width="840" />
+<img src="docs/images/services.png" alt="HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+, Peacock and Apple TV" width="840" />
 
 | Service | Sites |
 |---|---|
@@ -37,6 +37,7 @@ This extension adds one speed control that works the same way on all of them. Cl
 | Disney+ | `disneyplus.com` |
 | Paramount+ | `paramountplus.com` |
 | Peacock | `peacocktv.com` |
+| Apple TV | `tv.apple.com` |
 
 Want another service? [Open an issue](https://github.com/yuslama/streaming-speed-control/issues) with its website.
 
@@ -78,7 +79,7 @@ Want another service? [Open an issue](https://github.com/yuslama/streaming-speed
 
 The extension isn't on the Chrome Web Store yet, so you install it from this repository. It takes about a minute.
 
-1. **Download the extension:** grab `streaming-speed-control-v1.1.0.zip` from the [latest release](https://github.com/yuslama/streaming-speed-control/releases/latest) and unzip it.
+1. **Download the extension:** grab the `streaming-speed-control-v….zip` file from the [latest release](https://github.com/yuslama/streaming-speed-control/releases/latest) and unzip it.
    Or clone the repository:
    ```bash
    git clone https://github.com/yuslama/streaming-speed-control.git
@@ -97,6 +98,8 @@ Open one of the [supported services](#supported-services), start a show, and pic
 ### Supported browsers
 
 Desktop Google Chrome and Chromium-based browsers with Manifest V3 support, including de-Googled builds such as Ardia. Microsoft Edge, Brave, Arc, Opera and Vivaldi should work the same way. Firefox and Safari aren't supported yet.
+
+**Ardia on Mac:** Ardia opens streaming sites in its WebKit (Safari) engine by default so protected video can play, and extensions can't run there. To use the extension, remove the **Streaming sites** row under **Settings › Advanced › Web engine** so those sites open in Chromium. Protected video may not play in Ardia's Chromium engine.
 
 ## How to use
 
@@ -219,4 +222,4 @@ To try your changes, load the folder with **Load unpacked** as described in [Ins
 
 ---
 
-<sub>Not affiliated with, endorsed by, or sponsored by any of the streaming services named here. HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+ and Peacock are trademarks of their respective owners and are used here only to describe what the extension works with. The film still in the player screenshots is from <i>Dune: Part Two</i> (© 2024 Legendary Pictures / Warner Bros.) and is shown for illustration only.</sub>
+<sub>Not affiliated with, endorsed by, or sponsored by any of the streaming services named here. HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+, Peacock and Apple TV are trademarks of their respective owners and are used here only to describe what the extension works with. The film still in the player screenshots is from <i>Dune: Part Two</i> (© 2024 Legendary Pictures / Warner Bros.) and is shown for illustration only.</sub>

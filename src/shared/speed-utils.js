@@ -176,6 +176,7 @@
     { id: 'disneyplus', name: 'Disney+', domains: ['disneyplus.com'] },
     { id: 'paramountplus', name: 'Paramount+', domains: ['paramountplus.com'] },
     { id: 'peacock', name: 'Peacock', domains: ['peacocktv.com'] },
+    { id: 'appletv', name: 'Apple TV', domains: ['tv.apple.com'] },
   ]);
 
   const SERVICE_NAMES = Object.freeze(

@@ -159,6 +159,7 @@ test('getServiceForUrl names each supported streaming service', () => {
     ['https://www.paramountplus.com/shows/video/abc', 'Paramount+'],
     ['https://www.peacocktv.com/watch/playback/vod/abc', 'Peacock'],
     ['https://play.max.com/video/watch/abc', 'HBO Max'],
+    ['https://tv.apple.com/us/episode/abc', 'Apple TV'],
   ];
   for (const [url, name] of cases) {
     const service = getServiceForUrl(url);
@@ -181,8 +182,11 @@ test('isSupportedHost rejects lookalikes of the new services', () => {
   assert.equal(isSupportedHost('https://disneyplus.com.example.org/'), false);
   assert.equal(isSupportedHost('https://mypeacocktv.com/'), false);
   assert.equal(isSupportedHost('https://amazon.com.evil.io/gp/video/x'), false);
+  assert.equal(isSupportedHost('https://www.apple.com/'), false);
+  assert.equal(isSupportedHost('https://music.apple.com/'), false);
+  assert.equal(isSupportedHost('https://faketv.apple.com.evil.io/'), false);
 });
 
 test('SERVICE_NAMES lists each service once', () => {
-  assert.deepEqual(SERVICE_NAMES, ['HBO Max', 'Netflix', 'Hulu', 'Prime Video', 'Disney+', 'Paramount+', 'Peacock']);
+  assert.deepEqual(SERVICE_NAMES, ['HBO Max', 'Netflix', 'Hulu', 'Prime Video', 'Disney+', 'Paramount+', 'Peacock', 'Apple TV']);
 });

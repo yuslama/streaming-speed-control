@@ -9,7 +9,7 @@ related_targets: ["src/content/overlay-ui.js"]
 
 Scope: extension popup (src/popup/) and on-player overlay (src/content/overlay-ui.js). Mode: Operate.
 
-Audience and job: streaming viewers (HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+, Peacock), often in a dim room, changing speed in a few seconds and returning to the show. Public Web Store release, so first-time users must understand it unaided.
+Audience and job: streaming viewers (HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+, Peacock, Apple TV), often in a dim room, changing speed in a few seconds and returning to the show. Public Web Store release, so first-time users must understand it unaided.
 
 Constraints: zero-build HTML/CSS/JS, popup ~320px wide, overlay in Shadow DOM over the player and fullscreen. Secondary preset row (0.5/0.75/1/2.5/3) dropped; 1.0x via Reset.
 

@@ -1,8 +1,8 @@
 {
   "name": "streaming-speed-control",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
-  "description": "Zero-build Manifest V3 browser extension for playback speed on HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+ and Peacock.",
+  "description": "Zero-build Manifest V3 browser extension for playback speed on HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+, Peacock and Apple TV.",
   "scripts": {
     "icons": "node scripts/generate-icons.mjs",
     "check": "node --check src/shared/speed-utils.js && node --check src/content/page-hook.js && node --check src/content/video-controller.js && node --check src/content/overlay-ui.js && node --check src/content/main.js && node --check src/popup/popup.js && node --check src/background/service-worker.js && node --check scripts/generate-icons.mjs && node --check scripts/screenshots/capture.mjs",
