@@ -16,7 +16,7 @@ const CHROME =
     '/usr/bin/chromium',
   ].find((p) => fs.existsSync(p));
 
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
 
 // [file, page, width, height, color scheme]
 const SHOTS = [

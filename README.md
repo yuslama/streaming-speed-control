@@ -53,7 +53,7 @@ This extension fixes that. Click a speed and it sticks, even through HBO Max's o
   <tr>
     <td align="center" colspan="2">
       <img src="docs/images/overlay-menu.png" alt="Speed menu open on top of a video player" width="760" /><br />
-      <sub>Speed menu on the player (shown over a placeholder video frame)</sub>
+      <sub>Speed menu on the player</sub>
     </td>
   </tr>
 </table>
@@ -192,4 +192,4 @@ To try your changes, load the folder with **Load unpacked** as described in [Ins
 
 ---
 
-<sub>Not affiliated with, endorsed by, or sponsored by HBO Max or Warner Bros. Discovery. "HBO Max" is a trademark of its owner and is used here only to describe what the extension works with.</sub>
+<sub>Not affiliated with, endorsed by, or sponsored by HBO Max or Warner Bros. Discovery. "HBO Max" is a trademark of its owner and is used here only to describe what the extension works with. The film still in the player screenshots is from <i>Dune: Part Two</i> (© 2024 Legendary Pictures / Warner Bros.) and is shown for illustration only.</sub>
