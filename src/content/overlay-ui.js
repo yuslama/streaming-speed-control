@@ -10,7 +10,7 @@
   } = utils;
 
   const HOST_ID = 'hbomax-speed-controller-host';
-  const EXTENDED_PRESETS = [0.5, 0.75, 2.5, 3.0];
+  const SVG_NS = 'http://www.w3.org/2000/svg';
   const INACTIVITY_MS = 2800;
   const TOAST_MS = 1100;
 
@@ -24,12 +24,32 @@
       height: 100%;
       pointer-events: none;
       z-index: 2147483647;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
-      color: #F8FAFC;
+      font: 13px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+      color: #ededef;
+      -webkit-font-smoothing: antialiased;
+      --panel: rgba(24, 24, 27, 0.86);
+      --control: rgba(255, 255, 255, 0.08);
+      --control-hover: rgba(255, 255, 255, 0.14);
+      --ring: rgba(255, 255, 255, 0.1);
+      --text-2: #a8a8b0;
+      --text-3: #8e8e96;
+      --accent: #3b82f6;
+      --accent-ring: rgba(59, 130, 246, 0.6);
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
     }
 
     *, *::before, *::after {
       box-sizing: border-box;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--accent-ring);
+      outline-offset: 2px;
     }
 
     .root {
@@ -53,7 +73,7 @@
       gap: 8px;
       pointer-events: auto;
       opacity: 1;
-      transition: opacity 220ms ease, transform 220ms ease;
+      transition: opacity 240ms var(--ease-out);
     }
 
     .dock.is-idle {
@@ -66,51 +86,42 @@
     }
 
     .pill {
+      appearance: none;
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      height: 34px;
-      padding: 0 12px;
+      gap: 6px;
+      height: 32px;
+      padding: 0 12px 0 10px;
+      border: 0;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(14, 14, 22, 0.82);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      color: #F8FAFC;
+      background: var(--panel);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      box-shadow: 0 0 0 0.5px var(--ring), 0 4px 16px rgba(0, 0, 0, 0.35);
+      color: #ffffff;
       font-size: 13px;
       font-weight: 600;
-      letter-spacing: 0.01em;
       cursor: pointer;
       user-select: none;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42);
-      transition: background 150ms ease, border-color 150ms ease, transform 120ms ease, box-shadow 150ms ease;
+      transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
     }
 
     .pill:hover {
-      background: rgba(24, 24, 38, 0.92);
-      border-color: rgba(167, 139, 250, 0.5);
+      background: rgba(36, 36, 40, 0.92);
     }
 
     .pill:active {
-      transform: scale(0.97);
-    }
-
-    .pill.is-boosted {
-      border-color: rgba(139, 92, 246, 0.72);
-      background: linear-gradient(135deg, rgba(19, 17, 38, 0.9), rgba(109, 40, 217, 0.78));
-      box-shadow: 0 8px 26px rgba(109, 40, 217, 0.36);
+      transform: scale(0.96);
     }
 
     .pill-icon {
       display: inline-flex;
-      align-items: center;
-      color: #C4B5FD;
-      font-size: 11px;
-      font-weight: 700;
+      color: var(--text-2);
+      transition: color 150ms var(--ease-out);
     }
 
     .pill.is-boosted .pill-icon {
-      color: #EDE9FE;
+      color: var(--accent);
     }
 
     .pill-label {
@@ -118,66 +129,96 @@
     }
 
     .menu {
-      width: 268px;
+      width: 252px;
       padding: 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(14, 14, 22, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.58);
-      display: none;
+      border-radius: 12px;
+      background: var(--panel);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      box-shadow: 0 0 0 0.5px var(--ring), 0 16px 40px rgba(0, 0, 0, 0.5);
+      display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      transform-origin: top right;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px) scale(0.97);
+      pointer-events: none;
+      transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out), visibility 0s linear 160ms;
     }
 
     .dock.is-open .menu {
-      display: flex;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      pointer-events: auto;
+      transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out), visibility 0s;
     }
 
     .menu-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: rgba(226, 232, 240, 0.65);
+      color: var(--text-2);
+    }
+
+    .link-btn {
+      appearance: none;
+      height: 24px;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out);
+    }
+
+    .link-btn:hover {
+      background: var(--control);
+      color: #ffffff;
     }
 
     .quick-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 5px;
+      gap: 2px;
+      padding: 2px;
+      border-radius: 9px;
+      background: var(--control);
     }
 
     .speed-btn {
       appearance: none;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(255, 255, 255, 0.06);
-      color: #E2E8F0;
-      border-radius: 8px;
       height: 30px;
-      padding: 0 4px;
-      font-size: 11.5px;
+      padding: 0;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-2);
+      font-size: 12px;
       font-weight: 600;
       font-variant-numeric: tabular-nums;
       cursor: pointer;
-      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+      transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out), transform 120ms var(--ease-out);
     }
 
     .speed-btn:hover {
-      background: rgba(139, 92, 246, 0.22);
-      border-color: rgba(167, 139, 250, 0.5);
-      color: #FFFFFF;
+      background: var(--control-hover);
+      color: #ffffff;
+    }
+
+    .speed-btn:active {
+      transform: scale(0.95);
     }
 
     .speed-btn.is-active {
-      background: #7C3AED;
-      border-color: #A78BFA;
-      color: #FFFFFF;
-      box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.35);
+      background: var(--accent);
+      color: #ffffff;
     }
 
     .stepper-row {
@@ -185,56 +226,40 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding: 4px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .step-btn {
       appearance: none;
-      width: 34px;
+      display: inline-grid;
+      place-items: center;
+      width: 32px;
       height: 28px;
+      border: 0;
       border-radius: 7px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(255, 255, 255, 0.07);
-      color: #F8FAFC;
-      font-size: 16px;
-      font-weight: 600;
-      line-height: 1;
+      background: var(--control);
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      transition: background-color 150ms var(--ease-out), transform 120ms var(--ease-out);
     }
 
     .step-btn:hover {
-      background: rgba(139, 92, 246, 0.28);
-      border-color: rgba(167, 139, 250, 0.55);
+      background: var(--control-hover);
+    }
+
+    .step-btn:active {
+      transform: scale(0.94);
     }
 
     .stepper-readout {
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
-      color: #F8FAFC;
-    }
-
-    .extended-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 5px;
-    }
-
-    .speed-btn.is-secondary {
-      height: 26px;
-      font-size: 11px;
-      color: rgba(226, 232, 240, 0.85);
+      color: #ffffff;
     }
 
     .hint {
-      font-size: 10px;
-      color: rgba(203, 213, 225, 0.56);
+      font-size: 11px;
+      color: var(--text-3);
       text-align: center;
     }
 
@@ -242,27 +267,32 @@
       position: fixed;
       top: 24px;
       left: 50%;
-      transform: translateX(-50%) translateY(-6px);
       padding: 8px 16px;
-      border-radius: 999px;
-      background: rgba(14, 14, 22, 0.88);
-      border: 1px solid rgba(139, 92, 246, 0.65);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      color: #FFFFFF;
-      font-size: 15px;
-      font-weight: 700;
+      border-radius: 12px;
+      background: var(--panel);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      box-shadow: 0 0 0 0.5px var(--ring), 0 8px 24px rgba(0, 0, 0, 0.4);
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
-      letter-spacing: 0.02em;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
       opacity: 0;
+      transform: translateX(-50%) scale(0.96);
       pointer-events: none;
-      transition: opacity 150ms ease, transform 150ms ease;
+      transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out);
     }
 
     .toast.is-visible {
       opacity: 1;
-      transform: translateX(-50%) translateY(0);
+      transform: translateX(-50%) scale(1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dock, .pill, .menu, .dock.is-open .menu, .speed-btn, .step-btn, .toast {
+        transition-duration: 0ms;
+      }
     }
   `;
 
@@ -401,11 +431,13 @@
       this._pill = this.doc.createElement('button');
       this._pill.type = 'button';
       this._pill.className = 'pill';
-      this._pill.title = 'HBO Max Playback Speed';
+      this._pill.title = 'Playback speed';
+      this._pill.setAttribute('aria-haspopup', 'true');
+      this._pill.setAttribute('aria-expanded', 'false');
 
       const pillIcon = this.doc.createElement('span');
       pillIcon.className = 'pill-icon';
-      pillIcon.textContent = '>>';
+      pillIcon.appendChild(this._icon('M2.5 12.5a6 6 0 1 1 11 0M8 9.5l2.5-3', 15));
 
       this._pillLabel = this.doc.createElement('span');
       this._pillLabel.className = 'pill-label';
@@ -426,12 +458,10 @@
       const header = this.doc.createElement('div');
       header.className = 'menu-header';
       const titleSpan = this.doc.createElement('span');
-      titleSpan.textContent = 'Playback Speed';
+      titleSpan.textContent = 'Playback speed';
       const resetLink = this.doc.createElement('button');
       resetLink.type = 'button';
-      resetLink.className = 'speed-btn is-secondary';
-      resetLink.style.height = '22px';
-      resetLink.style.padding = '0 8px';
+      resetLink.className = 'link-btn';
       resetLink.textContent = 'Reset';
       resetLink.addEventListener('click', () => {
         this.onSelectSpeed(1.0);
@@ -442,7 +472,7 @@
       const quickGrid = this.doc.createElement('div');
       quickGrid.className = 'quick-grid';
       QUICK_PRESETS.forEach((rate) => {
-        const btn = this._createPresetButton(rate, false);
+        const btn = this._createPresetButton(rate);
         quickGrid.appendChild(btn);
       });
 
@@ -452,8 +482,9 @@
       const minusBtn = this.doc.createElement('button');
       minusBtn.type = 'button';
       minusBtn.className = 'step-btn';
-      minusBtn.textContent = '−';
-      minusBtn.title = 'Slower (-0.25x, Shift for -0.05x)';
+      minusBtn.appendChild(this._icon('M3.5 8h9', 14));
+      minusBtn.title = 'Slower by 0.25x (Shift: 0.05x)';
+      minusBtn.setAttribute('aria-label', 'Slower');
       minusBtn.addEventListener('click', (e) => {
         this.onStepSpeed(-1, Boolean(e.shiftKey));
       });
@@ -465,8 +496,9 @@
       const plusBtn = this.doc.createElement('button');
       plusBtn.type = 'button';
       plusBtn.className = 'step-btn';
-      plusBtn.textContent = '+';
-      plusBtn.title = 'Faster (+0.25x, Shift for +0.05x)';
+      plusBtn.appendChild(this._icon('M3.5 8h9M8 3.5v9', 14));
+      plusBtn.title = 'Faster by 0.25x (Shift: 0.05x)';
+      plusBtn.setAttribute('aria-label', 'Faster');
       plusBtn.addEventListener('click', (e) => {
         this.onStepSpeed(1, Boolean(e.shiftKey));
       });
@@ -475,21 +507,13 @@
       stepperRow.appendChild(this._readout);
       stepperRow.appendChild(plusBtn);
 
-      const extendedRow = this.doc.createElement('div');
-      extendedRow.className = 'extended-row';
-      EXTENDED_PRESETS.forEach((rate) => {
-        const btn = this._createPresetButton(rate, true);
-        extendedRow.appendChild(btn);
-      });
-
       const hint = this.doc.createElement('div');
       hint.className = 'hint';
-      hint.textContent = 'Shift + / − for 0.05x • Keys [ ] \\ • Alt+1–5';
+      hint.textContent = 'Shift-click for 0.05x · [ ] step · \\ toggle 1.0x';
 
       menu.appendChild(header);
       menu.appendChild(quickGrid);
       menu.appendChild(stepperRow);
-      menu.appendChild(extendedRow);
       menu.appendChild(hint);
 
       this._dock.appendChild(this._pill);
@@ -505,10 +529,26 @@
       this._shadow.appendChild(this._root);
     }
 
-    _createPresetButton(rate, isSecondary) {
+    _icon(d, size) {
+      const svg = this.doc.createElementNS(SVG_NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 16 16');
+      svg.setAttribute('width', String(size));
+      svg.setAttribute('height', String(size));
+      svg.setAttribute('aria-hidden', 'true');
+      const path = this.doc.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', 'currentColor');
+      path.setAttribute('stroke-width', '1.6');
+      path.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(path);
+      return svg;
+    }
+
+    _createPresetButton(rate) {
       const btn = this.doc.createElement('button');
       btn.type = 'button';
-      btn.className = isSecondary ? 'speed-btn is-secondary' : 'speed-btn';
+      btn.className = 'speed-btn';
       btn.textContent = formatSpeed(rate);
       btn.addEventListener('click', () => {
         this.onSelectSpeed(rate);
@@ -580,6 +620,7 @@
       this._root.classList.toggle('is-hidden', !this.hasVideo);
       this._dock.classList.toggle('is-hidden', !this.visible);
       this._dock.classList.toggle('is-open', this.isOpen);
+      this._pill.setAttribute('aria-expanded', String(this.isOpen));
 
       const formatted = formatSpeed(this.speed);
       this._pillLabel.textContent = formatted;

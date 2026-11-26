@@ -12,13 +12,10 @@
     isSupportedHost,
   } = globalThis.HboMaxSpeedUtils;
 
-  const OTHER_PRESETS = [0.5, 0.75, 1.0, 2.5, 3.0];
-
   const statusPill = document.getElementById('status-pill');
   const statusText = document.getElementById('status-text');
   const liveSpeedEl = document.getElementById('live-speed');
   const favoritesGrid = document.getElementById('favorites-grid');
-  const otherPresetsRow = document.getElementById('other-presets-row');
   const speedSlider = document.getElementById('speed-slider');
   const stepDownBtn = document.getElementById('step-down-btn');
   const stepUpBtn = document.getElementById('step-up-btn');
@@ -120,31 +117,30 @@
       btn.type = 'button';
       btn.className = 'fav-btn';
       btn.textContent = formatSpeed(rate);
+      btn.setAttribute('aria-pressed', 'false');
       btn.addEventListener('click', () => applySpeed(rate));
       favoritesGrid.appendChild(btn);
-      presetButtons.set(rate, btn);
-    });
-
-    OTHER_PRESETS.forEach((rate) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'preset-btn';
-      btn.textContent = formatSpeed(rate);
-      btn.addEventListener('click', () => applySpeed(rate));
-      otherPresetsRow.appendChild(btn);
       presetButtons.set(rate, btn);
     });
   }
 
   function render() {
     const clamped = clampSpeed(currentSpeed);
-    liveSpeedEl.textContent = formatSpeed(clamped);
-    liveSpeedEl.classList.toggle('is-boosted', Math.abs(clamped - 1.0) > 0.001);
+    const label = formatSpeed(clamped);
+    liveSpeedEl.textContent = label;
+    liveSpeedEl.classList.toggle('is-pending', !(activeTabSupported && hasVideo));
+    resetBtn.disabled = Math.abs(clamped - 1.0) <= 0.001;
 
     speedSlider.value = String(clamped);
+    const min = Number(speedSlider.min);
+    const max = Number(speedSlider.max);
+    speedSlider.style.setProperty('--fill', `${((clamped - min) / (max - min)) * 100}%`);
+    speedSlider.setAttribute('aria-valuetext', label);
 
     presetButtons.forEach((btn, rate) => {
-      btn.classList.toggle('is-active', Math.abs(clamped - rate) <= 0.001);
+      const on = Math.abs(clamped - rate) <= 0.001;
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-pressed', String(on));
     });
 
     toggleRemember.checked = settings.rememberSpeed;
@@ -152,16 +148,18 @@
     toggleKeyboard.checked = settings.keyboardEnabled;
 
     statusPill.classList.remove('is-active', 'is-ready');
+    statusPill.removeAttribute('title');
     if (activeTabSupported && hasVideo) {
       statusPill.classList.add('is-active');
-      statusText.textContent = 'Active on HBO Max';
+      statusText.textContent = `Playing at ${label}`;
     } else if (activeTabSupported) {
       statusPill.classList.add('is-ready');
-      statusText.textContent = 'Ready on HBO Max';
+      statusText.textContent = 'Start a video to apply';
     } else {
-      statusText.textContent = activeTabDebug
-        ? `Saved (${activeTabDebug})`
-        : 'Saved for HBO Max';
+      statusText.textContent = 'Open HBO Max to apply';
+      if (activeTabDebug) {
+        statusPill.title = `Saved for next time. No HBO Max tab found (${activeTabDebug}).`;
+      }
     }
   }
 
