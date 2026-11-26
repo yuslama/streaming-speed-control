@@ -189,7 +189,3 @@ To try your changes, load the folder with **Load unpacked** as described in [Ins
 ## License
 
 [MIT](LICENSE)
-
----
-
-<sub>Not affiliated with, endorsed by, or sponsored by HBO Max or Warner Bros. Discovery. "HBO Max" is a trademark of its owner and is used here only to describe what the extension works with. The film still in the player screenshots is from <i>Dune: Part Two</i> (© 2024 Legendary Pictures / Warner Bros.) and is shown for illustration only.</sub>
