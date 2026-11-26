@@ -62,8 +62,8 @@ This extension fixes that. Click a speed and it sticks, even through HBO Max's o
 
 The extension isn't on the Chrome Web Store yet, so you install it from this repository. It takes about a minute.
 
-1. **Download the code:** click **Code → Download ZIP** at the top of this page ([direct link](https://github.com/yuslama/hbo-max-playback-speed/archive/refs/heads/main.zip)), then unzip it.
-   Or clone it:
+1. **Download the extension:** grab `hbo-max-playback-speed-v1.0.0.zip` from the [latest release](https://github.com/yuslama/hbo-max-playback-speed/releases/latest) and unzip it.
+   Or clone the repository:
    ```bash
    git clone https://github.com/yuslama/hbo-max-playback-speed.git
    ```
@@ -74,7 +74,7 @@ The extension isn't on the Chrome Web Store yet, so you install it from this rep
 
 Open [hbomax.com](https://www.hbomax.com) or [max.com](https://www.max.com), start a show, and pick a speed.
 
-**Updating:** download the new version (or `git pull`), then click the reload icon on the extension's card in `chrome://extensions`.
+**Updating:** download the new release ZIP (or `git pull`), replace the old folder, then click the reload icon on the extension's card in `chrome://extensions`.
 
 ### Supported browsers
 
@@ -170,6 +170,7 @@ npm test             # unit tests and manifest checks
 npm run check        # syntax-check every script
 npm run icons        # regenerate the icons from scripts/generate-icons.mjs
 npm run screenshots  # regenerate the README images (needs Google Chrome)
+npm run package      # build the release ZIP into dist/
 ```
 
 ### Project layout
