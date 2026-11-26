@@ -69,27 +69,28 @@ function encodePngRgba(width, height, rgba) {
   ]);
 }
 
-function lerp(a, b, t) {
-  return a + (b - a) * t;
-}
+// Icon: double-arrow fast-forward, white on a blue rounded tile framed like a film strip.
+// Geometry is authored on a 256-unit canvas, matching icons/icon.svg.
+const TILE_COLOR = [0x25, 0x63, 0xeb]; // #2563EB
+const MARK_COLOR = [0xff, 0xff, 0xff];
+const BAND_COLOR = [0x1d, 0x4e, 0xd8]; // #1D4ED8 film-strip edges
+const HOLE_COLOR = [0x3b, 0x7b, 0xf0]; // #3B7BF0 perforations
+const BAND_HEIGHT = 44; // top band ends at y=44, bottom band starts at y=212
+const HOLE_XS = [34, 74, 114, 154, 194];
+const HOLE_YS = [22, 220];
+const HOLE_W = 20;
+const HOLE_H = 14;
+const HOLE_RADIUS = 3;
+const HOLES_MIN_SIZE = 32; // perforations turn to noise below this, so 16px keeps only the bands
+const TILE_INSET = 8; // 256-unit inset (4/128)
+const TILE_RADIUS = 56;
+const CORNER_ROUND = 5; // rounds the arrow corners (stroke-linejoin: round)
 
-function clamp01(v) {
-  return v < 0 ? 0 : v > 1 ? 1 : v;
-}
-
-function sampleGradient(u, v) {
-  const t = clamp01((u + v) * 0.5);
-  const c0 = [0x13, 0x11, 0x26]; // #131126
-  const c1 = [0x4c, 0x1d, 0x95]; // #4C1D95
-  const c2 = [0x7c, 0x3a, 0xed]; // #7C3AED
-
-  if (t <= 0.52) {
-    const k = t / 0.52;
-    return [lerp(c0[0], c1[0], k), lerp(c0[1], c1[1], k), lerp(c0[2], c1[2], k)];
-  }
-  const k = (t - 0.52) / 0.48;
-  return [lerp(c1[0], c2[0], k), lerp(c1[1], c2[1], k), lerp(c1[2], c2[2], k)];
-}
+// Two arrows meeting at the centre line, shifted right of centre for optical balance.
+const MARK = [
+  [[68, 76], [130, 128], [68, 180]],
+  [[134, 76], [196, 128], [134, 180]],
+];
 
 function roundedBoxSdf(px, py, cx, cy, halfW, halfH, radius) {
   const dx = Math.abs(px - cx) - (halfW - radius);
@@ -99,57 +100,56 @@ function roundedBoxSdf(px, py, cx, cy, halfW, halfH, radius) {
   return Math.hypot(qx, qy) + Math.min(Math.max(dx, dy), 0) - radius;
 }
 
-function pointInTriangle(px, py, ax, ay, bx, by, cx, cy) {
-  const v0x = cx - ax;
-  const v0y = cy - ay;
-  const v1x = bx - ax;
-  const v1y = by - ay;
-  const v2x = px - ax;
-  const v2y = py - ay;
-
-  const dot00 = v0x * v0x + v0y * v0y;
-  const dot01 = v0x * v1x + v0y * v1y;
-  const dot02 = v0x * v2x + v0y * v2y;
-  const dot11 = v1x * v1x + v1y * v1y;
-  const dot12 = v1x * v2x + v1y * v2y;
-
-  const denom = dot00 * dot11 - dot01 * dot01;
-  if (denom === 0) return false;
-  const inv = 1 / denom;
-  const u = (dot11 * dot02 - dot01 * dot12) * inv;
-  const v = (dot00 * dot12 - dot01 * dot02) * inv;
-  return u >= 0 && v >= 0 && u + v <= 1;
+function pointInPolygon(px, py, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i, i += 1) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    if (yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
 }
 
-function pointInChevron(px, py, leftX, tipX, centerY, halfHeight) {
-  return pointInTriangle(
-    px,
-    py,
-    leftX,
-    centerY - halfHeight,
-    tipX,
-    centerY,
-    leftX,
-    centerY + halfHeight,
+function distToSegment(px, py, [ax, ay], [bx, by]) {
+  const vx = bx - ax;
+  const vy = by - ay;
+  const t = Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / (vx * vx + vy * vy)));
+  return Math.hypot(px - (ax + vx * t), py - (ay + vy * t));
+}
+
+function inMark(px, py, mark, round) {
+  return mark.some((poly) => {
+    if (pointInPolygon(px, py, poly)) return true;
+    for (let i = 0; i < poly.length; i += 1) {
+      if (distToSegment(px, py, poly[i], poly[(i + 1) % poly.length]) <= round) return true;
+    }
+    return false;
+  });
+}
+
+function inHole(px, py) {
+  return HOLE_YS.some((hy) =>
+    HOLE_XS.some(
+      (hx) =>
+        roundedBoxSdf(px, py, hx + HOLE_W / 2, hy + HOLE_H / 2, HOLE_W / 2, HOLE_H / 2, HOLE_RADIUS) <= 0,
+    ),
   );
+}
+
+function tileColor(px, py, drawHoles) {
+  if (py >= BAND_HEIGHT && py <= 256 - BAND_HEIGHT) return TILE_COLOR;
+  return drawHoles && inHole(px, py) ? HOLE_COLOR : BAND_COLOR;
 }
 
 function renderIcon(size) {
   const rgba = Buffer.alloc(size * size * 4);
-  const samples = size <= 32 ? 6 : 4;
+  const samples = size <= 32 ? 8 : 4;
   const invSamples = 1 / (samples * samples);
-
-  const margin = 0.03125; // ~4/128 normalized padding
-  const halfExtent = 0.5 - margin;
-  const radius = 0.21875; // ~28/128
-  const strokeWidth = 0.016;
-
-  // Dual >> fast-forward geometry (normalized 0..1 space)
-  const tri1Left = 0.242;
-  const tri1Tip = 0.492;
-  const tri2Left = 0.512;
-  const tri2Tip = 0.762;
-  const halfHeight = 0.205;
+  const mark = MARK;
+  const drawHoles = size >= HOLES_MIN_SIZE;
+  const half = 128 - TILE_INSET;
 
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
@@ -160,35 +160,14 @@ function renderIcon(size) {
 
       for (let sy = 0; sy < samples; sy += 1) {
         for (let sx = 0; sx < samples; sx += 1) {
-          const u = (x + (sx + 0.5) / samples) / size;
-          const v = (y + (sy + 0.5) / samples) / size;
+          const u = ((x + (sx + 0.5) / samples) / size) * 256;
+          const v = ((y + (sy + 0.5) / samples) / size) * 256;
 
-          const dist = roundedBoxSdf(u, v, 0.5, 0.5, halfExtent, halfExtent, radius);
-          if (dist > 0) {
+          if (roundedBoxSdf(u, v, 128, 128, half, half, TILE_RADIUS) > 0) {
             continue;
           }
 
-          let [r, g, b] = sampleGradient(u, v);
-
-          // Subtle inner rim highlight
-          if (dist > -strokeWidth) {
-            const rimAlpha = 0.18 * (1 - clamp01((u + v) * 0.3));
-            r = lerp(r, 255, rimAlpha);
-            g = lerp(g, 255, rimAlpha);
-            b = lerp(b, 255, rimAlpha);
-          }
-
-          // White dual fast-forward symbol (>>)
-          const inSymbol =
-            pointInChevron(u, v, tri1Left, tri1Tip, 0.5, halfHeight) ||
-            pointInChevron(u, v, tri2Left, tri2Tip, 0.5, halfHeight);
-
-          if (inSymbol) {
-            r = 255;
-            g = 255;
-            b = 255;
-          }
-
+          const [r, g, b] = inMark(u, v, mark, CORNER_ROUND) ? MARK_COLOR : tileColor(u, v, drawHoles);
           rAcc += r;
           gAcc += g;
           bAcc += b;
@@ -197,12 +176,7 @@ function renderIcon(size) {
       }
 
       const idx = (y * size + x) * 4;
-      if (hitCount === 0) {
-        rgba[idx] = 0;
-        rgba[idx + 1] = 0;
-        rgba[idx + 2] = 0;
-        rgba[idx + 3] = 0;
-      } else {
+      if (hitCount > 0) {
         rgba[idx] = Math.round(rAcc / hitCount);
         rgba[idx + 1] = Math.round(gAcc / hitCount);
         rgba[idx + 2] = Math.round(bAcc / hitCount);
@@ -214,6 +188,26 @@ function renderIcon(size) {
   return encodePngRgba(size, size, rgba);
 }
 
+function toSvg(mark) {
+  const d = mark
+    .map((poly) => `M${poly.map(([x, y]) => `${+x.toFixed(2)} ${+y.toFixed(2)}`).join('L')}Z`)
+    .join(' ');
+  const size = 256 - TILE_INSET * 2;
+  const holes = HOLE_YS.flatMap((y) =>
+    HOLE_XS.map((x) => `<rect x="${x}" y="${y}" width="${HOLE_W}" height="${HOLE_H}" rx="${HOLE_RADIUS}"/>`),
+  ).join('');
+  return [
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">',
+    `  <defs><clipPath id="tile"><rect x="${TILE_INSET}" y="${TILE_INSET}" width="${size}" height="${size}" rx="${TILE_RADIUS}"/></clipPath></defs>`,
+    `  <rect x="${TILE_INSET}" y="${TILE_INSET}" width="${size}" height="${size}" rx="${TILE_RADIUS}" fill="#2563EB"/>`,
+    `  <g clip-path="url(#tile)" fill="#1D4ED8"><rect x="0" y="0" width="256" height="${BAND_HEIGHT}"/><rect x="0" y="${256 - BAND_HEIGHT}" width="256" height="${BAND_HEIGHT}"/></g>`,
+    `  <g fill="#3B7BF0">${holes}</g>`,
+    `  <path d="${d}" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="${CORNER_ROUND * 2}" stroke-linejoin="round"/>`,
+    '</svg>',
+    '',
+  ].join('\n');
+}
+
 fs.mkdirSync(ICONS_DIR, { recursive: true });
 for (const size of SIZES) {
   const png = renderIcon(size);
@@ -221,3 +215,6 @@ for (const size of SIZES) {
   fs.writeFileSync(outPath, png);
   console.log(`Generated ${outPath} (${png.length} bytes)`);
 }
+
+fs.writeFileSync(path.join(ICONS_DIR, 'icon.svg'), toSvg(MARK));
+console.log('Generated icons/icon.svg');

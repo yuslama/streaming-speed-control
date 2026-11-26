@@ -54,3 +54,7 @@ System stack: `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sys
 ## Motion
 
 Ease-out `cubic-bezier(0.23, 1, 0.32, 1)`. Hover and color 150ms, switches 180ms, press scale 0.94–0.96 at 120ms. Overlay menu opens from its top-right origin (scale 0.97 + 4px, 160ms); toast scales in from 0.96. All durations go to 0 under `prefers-reduced-motion`.
+
+## Icon
+
+The original double-arrow fast-forward mark, refined: two white arrows with rounded corners meeting at the centre line, nudged right for optical balance, on a `#2563EB` rounded tile (radius 56 on a 256 canvas, 8-unit inset) framed like a film strip: `#1D4ED8` bands top and bottom with five `#3B7BF0` perforations each. At 16px the perforations are dropped and only the bands remain. No gradient. The geometry lives in `scripts/generate-icons.mjs`, which writes `icons/icon.svg` and the 16/32/48/128 PNGs (`npm run icons`). The toolbar badge uses the same `#2563EB`.

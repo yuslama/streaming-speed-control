@@ -44,7 +44,7 @@ function updateBadge(tabId, speed, hasVideo) {
     const text = formatBadge(speed);
     chrome.action.setBadgeText({ tabId, text }).catch(() => {});
     if (text) {
-      chrome.action.setBadgeBackgroundColor({ tabId, color: '#6D28D9' }).catch(() => {});
+      chrome.action.setBadgeBackgroundColor({ tabId, color: '#2563EB' }).catch(() => {});
       if (typeof chrome.action.setBadgeTextColor === 'function') {
         chrome.action.setBadgeTextColor({ tabId, color: '#FFFFFF' }).catch(() => {});
       }
