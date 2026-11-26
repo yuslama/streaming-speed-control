@@ -148,38 +148,89 @@
     };
   }
 
-  function isSupportedHost(urlOrHostname) {
+  // Streaming services the extension runs on. `paths` limits a service to part of a
+  // shared domain (Prime Video lives under /gp/video on Amazon's store domains).
+  const AMAZON_DOMAINS = Object.freeze([
+    'amazon.com',
+    'amazon.co.uk',
+    'amazon.de',
+    'amazon.co.jp',
+    'amazon.ca',
+    'amazon.com.au',
+    'amazon.in',
+    'amazon.fr',
+    'amazon.it',
+    'amazon.es',
+    'amazon.com.mx',
+    'amazon.com.br',
+    'amazon.nl',
+  ]);
+  const PRIME_VIDEO_PATH = /^\/gp\/video(\/|$)/i;
+
+  const SERVICES = Object.freeze([
+    { id: 'hbomax', name: 'HBO Max', domains: ['hbomax.com', 'max.com'] },
+    { id: 'netflix', name: 'Netflix', domains: ['netflix.com'] },
+    { id: 'hulu', name: 'Hulu', domains: ['hulu.com'] },
+    { id: 'primevideo', name: 'Prime Video', domains: ['primevideo.com'] },
+    { id: 'primevideo', name: 'Prime Video', domains: AMAZON_DOMAINS, path: PRIME_VIDEO_PATH },
+    { id: 'disneyplus', name: 'Disney+', domains: ['disneyplus.com'] },
+    { id: 'paramountplus', name: 'Paramount+', domains: ['paramountplus.com'] },
+    { id: 'peacock', name: 'Peacock', domains: ['peacocktv.com'] },
+  ]);
+
+  const SERVICE_NAMES = Object.freeze(
+    SERVICES.reduce((names, service) => (names.includes(service.name) ? names : [...names, service.name]), []),
+  );
+
+  function parseLocation(urlOrHostname) {
     if (!urlOrHostname || typeof urlOrHostname !== 'string') {
-      return false;
+      return null;
     }
     const trimmed = urlOrHostname.trim();
     if (!trimmed) {
-      return false;
+      return null;
     }
-
-    let hostname = '';
     try {
       if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed)) {
         const parsed = new URL(trimmed);
         if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-          return false;
+          return null;
         }
-        hostname = parsed.hostname;
-      } else {
-        const parsed = new URL(`https://${trimmed}`);
-        hostname = parsed.hostname;
+        return { hostname: parsed.hostname, pathname: parsed.pathname, hasPath: true };
       }
+      const parsed = new URL(`https://${trimmed}`);
+      return { hostname: parsed.hostname, pathname: parsed.pathname, hasPath: trimmed.includes('/') };
     } catch {
-      return false;
+      return null;
     }
+  }
 
-    const normalized = hostname.toLowerCase().replace(/\.+$/, '');
-    return (
-      normalized === 'hbomax.com' ||
-      normalized.endsWith('.hbomax.com') ||
-      normalized === 'max.com' ||
-      normalized.endsWith('.max.com')
-    );
+  function matchesDomain(hostname, domain) {
+    return hostname === domain || hostname.endsWith(`.${domain}`);
+  }
+
+  // Returns { id, name } for a supported streaming URL or hostname, otherwise null.
+  // A service limited to a path (Prime Video on Amazon) only matches a full URL.
+  function getServiceForUrl(urlOrHostname) {
+    const loc = parseLocation(urlOrHostname);
+    if (!loc) {
+      return null;
+    }
+    const hostname = loc.hostname.toLowerCase().replace(/\.+$/, '');
+    for (const service of SERVICES) {
+      if (!service.domains.some((domain) => matchesDomain(hostname, domain))) {
+        continue;
+      }
+      if (service.path && !(loc.hasPath && service.path.test(loc.pathname))) {
+        continue;
+      }
+      return { id: service.id, name: service.name };
+    }
+    return null;
+  }
+
+  function isSupportedHost(urlOrHostname) {
+    return getServiceForUrl(urlOrHostname) !== null;
   }
 
   return {
@@ -199,6 +250,9 @@
     stepSpeed,
     toggleSpeed,
     normalizeSettings,
+    SERVICES,
+    SERVICE_NAMES,
+    getServiceForUrl,
     isSupportedHost,
   };
 });

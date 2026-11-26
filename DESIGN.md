@@ -1,6 +1,6 @@
 # Design
 
-The category standard, played straight: a clean dark UI at the polish level of Linear / Raycast and native macOS controls. Built for a dim room while a show plays. No themed costume, no HBO Max brand colors.
+The category standard, played straight: a clean dark UI at the polish level of Linear / Raycast and native macOS controls. Built for a dim room while a show plays. No themed costume, no streaming service brand colors.
 
 ## Surfaces
 
@@ -22,8 +22,8 @@ Dark is the default; the popup follows `prefers-color-scheme: light`. The overla
 | `--text-3` | `#8a8a93` | `#6e6e77` | Help text, scale, footer |
 | `--accent` | `#3b82f6` | `#2563eb` | Selected segment, slider fill, switch on, focus ring |
 | `--ok` | `#30c463` | `#1f9d4c` | Status dot: playing at the set speed |
-| `--wait` | `#e5a50a` | `#b57f00` | Status dot: HBO Max open, no video |
-| `--idle` | `#6b6b74` | `#a0a0a8` | Status dot: no HBO Max tab |
+| `--wait` | `#e5a50a` | `#b57f00` | Status dot: supported tab open, no video |
+| `--idle` | `#6b6b74` | `#a0a0a8` | Status dot: no supported tab |
 
 Overlay panel: `rgba(24,24,27,0.86)` with `backdrop-filter: blur(20–24px) saturate(1.4)` for legibility over video, 0.5px white 10% ring.
 
@@ -48,7 +48,7 @@ System stack: `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sys
 - **Segmented control**: track in `--control`, 2px padding and gap, selected segment filled with accent. `aria-pressed` on each segment.
 - **Switch**: 32×20, 16px white knob, accent when on. Real checkbox with `role="switch"`.
 - **Slider**: native range, 4px track filled to `--fill` (set from JS), 16px white thumb.
-- **Status**: dot + one sentence that states the truth: "Playing at 1.50x", "Start a video to apply", "Open HBO Max to apply". When nothing is applied, the live speed turns `--text-2`.
+- **Status**: dot + one sentence that states the truth: "Playing on Netflix", "Start a video to apply", "Open a streaming site". When nothing is applied, the live speed turns `--text-2`.
 - **Icons**: inline SVG, 1.5–1.6 stroke, round caps. No glyph icons.
 
 ## Motion

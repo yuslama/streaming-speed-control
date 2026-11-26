@@ -21,8 +21,8 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 // [file, page, width, height, color scheme]
 const SHOTS = [
   ['hero.png', 'hero.html', 1280, 640, 'dark'],
-  ['popup-dark.png', 'popup.html?state=active&speed=1.5', 320, 434, 'dark'],
-  ['popup-light.png', 'popup.html?state=active&speed=1.75', 320, 434, 'light'],
+  ['popup-dark.png', 'popup.html?state=active&speed=1.5&url=https://www.netflix.com/watch/demo', 320, 434, 'dark'],
+  ['popup-light.png', 'popup.html?state=active&speed=1.75&url=https://www.disneyplus.com/video/demo', 320, 434, 'light'],
   ['overlay-menu.png', 'overlay.html?open&speed=1.5', 960, 540, 'dark'],
   ['overlay-toast.png', 'overlay.html?toast&speed=1.75', 960, 540, 'dark'],
 ];

@@ -16,6 +16,8 @@ const {
   toggleSpeed,
   normalizeSettings,
   isSupportedHost,
+  getServiceForUrl,
+  SERVICE_NAMES,
 } = require('../src/shared/speed-utils.js');
 
 test('preset constants include user favorites 1.25x, 1.50x, 1.75x, 2.0x', () => {
@@ -144,4 +146,43 @@ test('isSupportedHost validates HBO Max and Max domains and rejects lookalikes',
   assert.equal(isSupportedHost('chrome://extensions'), false);
   assert.equal(isSupportedHost(''), false);
   assert.equal(isSupportedHost(null), false);
+});
+
+test('getServiceForUrl names each supported streaming service', () => {
+  const cases = [
+    ['https://www.netflix.com/watch/81234567', 'Netflix'],
+    ['https://www.hulu.com/watch/abc', 'Hulu'],
+    ['https://www.primevideo.com/detail/0ABC', 'Prime Video'],
+    ['https://www.amazon.com/gp/video/detail/B0ABC', 'Prime Video'],
+    ['https://www.amazon.co.uk/gp/video/storefront', 'Prime Video'],
+    ['https://www.disneyplus.com/video/abc', 'Disney+'],
+    ['https://www.paramountplus.com/shows/video/abc', 'Paramount+'],
+    ['https://www.peacocktv.com/watch/playback/vod/abc', 'Peacock'],
+    ['https://play.max.com/video/watch/abc', 'HBO Max'],
+  ];
+  for (const [url, name] of cases) {
+    const service = getServiceForUrl(url);
+    assert.ok(service, `expected a service for ${url}`);
+    assert.equal(service.name, name);
+  }
+});
+
+test('Prime Video on Amazon only matches the /gp/video section', () => {
+  assert.equal(isSupportedHost('https://www.amazon.com/dp/B0ABC'), false);
+  assert.equal(isSupportedHost('https://www.amazon.com/'), false);
+  assert.equal(isSupportedHost('amazon.com'), false);
+  assert.equal(isSupportedHost('https://www.amazon.com/gp/videogames'), false);
+  assert.equal(isSupportedHost('https://www.amazon.com/gp/video'), true);
+});
+
+test('isSupportedHost rejects lookalikes of the new services', () => {
+  assert.equal(isSupportedHost('https://evilnetflix.com/watch/1'), false);
+  assert.equal(isSupportedHost('https://netflix.com.evil.io/'), false);
+  assert.equal(isSupportedHost('https://disneyplus.com.example.org/'), false);
+  assert.equal(isSupportedHost('https://mypeacocktv.com/'), false);
+  assert.equal(isSupportedHost('https://amazon.com.evil.io/gp/video/x'), false);
+});
+
+test('SERVICE_NAMES lists each service once', () => {
+  assert.deepEqual(SERVICE_NAMES, ['HBO Max', 'Netflix', 'Hulu', 'Prime Video', 'Disney+', 'Paramount+', 'Peacock']);
 });

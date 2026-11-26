@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "HBO Max Playback Speed Controller",
-  "short_name": "HBO Max Speed",
-  "version": "1.0.0",
-  "description": "Control playback speed on HBO Max (1.25x, 1.50x, 1.75x, 2.0x & custom) with an on-player overlay, popup, and keyboard shortcuts.",
+  "name": "Streaming Speed Control",
+  "short_name": "Stream Speed",
+  "version": "1.1.0",
+  "description": "Playback speed control for HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+ and Peacock. Any speed from 0.25x to 4x.",
   "permissions": [
     "storage",
     "activeTab",
@@ -11,14 +11,27 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://www.hbomax.com/*",
-    "https://play.hbomax.com/*",
-    "https://hbomax.com/*",
     "https://*.hbomax.com/*",
-    "https://www.max.com/*",
-    "https://play.max.com/*",
-    "https://max.com/*",
-    "https://*.max.com/*"
+    "https://*.max.com/*",
+    "https://*.netflix.com/*",
+    "https://*.hulu.com/*",
+    "https://*.primevideo.com/*",
+    "https://*.amazon.com/gp/video/*",
+    "https://*.amazon.co.uk/gp/video/*",
+    "https://*.amazon.de/gp/video/*",
+    "https://*.amazon.co.jp/gp/video/*",
+    "https://*.amazon.ca/gp/video/*",
+    "https://*.amazon.com.au/gp/video/*",
+    "https://*.amazon.in/gp/video/*",
+    "https://*.amazon.fr/gp/video/*",
+    "https://*.amazon.it/gp/video/*",
+    "https://*.amazon.es/gp/video/*",
+    "https://*.amazon.com.mx/gp/video/*",
+    "https://*.amazon.com.br/gp/video/*",
+    "https://*.amazon.nl/gp/video/*",
+    "https://*.disneyplus.com/*",
+    "https://*.paramountplus.com/*",
+    "https://*.peacocktv.com/*"
   ],
   "icons": {
     "16": "icons/icon16.png",
@@ -27,7 +40,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "HBO Max Playback Speed",
+    "default_title": "Streaming Speed Control",
     "default_popup": "src/popup/popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
@@ -42,14 +55,27 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.hbomax.com/*",
-        "https://play.hbomax.com/*",
-        "https://hbomax.com/*",
         "https://*.hbomax.com/*",
-        "https://www.max.com/*",
-        "https://play.max.com/*",
-        "https://max.com/*",
-        "https://*.max.com/*"
+        "https://*.max.com/*",
+        "https://*.netflix.com/*",
+        "https://*.hulu.com/*",
+        "https://*.primevideo.com/*",
+        "https://*.amazon.com/gp/video/*",
+        "https://*.amazon.co.uk/gp/video/*",
+        "https://*.amazon.de/gp/video/*",
+        "https://*.amazon.co.jp/gp/video/*",
+        "https://*.amazon.ca/gp/video/*",
+        "https://*.amazon.com.au/gp/video/*",
+        "https://*.amazon.in/gp/video/*",
+        "https://*.amazon.fr/gp/video/*",
+        "https://*.amazon.it/gp/video/*",
+        "https://*.amazon.es/gp/video/*",
+        "https://*.amazon.com.mx/gp/video/*",
+        "https://*.amazon.com.br/gp/video/*",
+        "https://*.amazon.nl/gp/video/*",
+        "https://*.disneyplus.com/*",
+        "https://*.paramountplus.com/*",
+        "https://*.peacocktv.com/*"
       ],
       "js": [
         "src/shared/speed-utils.js",

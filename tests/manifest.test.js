@@ -17,10 +17,15 @@ test('manifest.json is valid MV3 and all referenced files exist', () => {
   assert.ok(Array.isArray(manifest.content_scripts) && manifest.content_scripts.length === 1);
 
   const [isolatedCs] = manifest.content_scripts;
-  assert.ok(isolatedCs.matches.includes('https://www.hbomax.com/*'));
-  assert.ok(isolatedCs.matches.includes('https://*.hbomax.com/*'));
-  assert.ok(isolatedCs.matches.includes('https://www.max.com/*'));
-  assert.ok(isolatedCs.matches.includes('https://*.max.com/*'));
+  const { SERVICES } = require('../src/shared/speed-utils.js');
+  for (const service of SERVICES) {
+    for (const domain of service.domains) {
+      const pattern = service.path ? `https://*.${domain}/gp/video/*` : `https://*.${domain}/*`;
+      assert.ok(isolatedCs.matches.includes(pattern), `content script should match ${pattern}`);
+      assert.ok(manifest.host_permissions.includes(pattern), `host_permissions should include ${pattern}`);
+    }
+  }
+  assert.deepEqual([...isolatedCs.matches].sort(), [...manifest.host_permissions].sort());
   assert.equal(isolatedCs.run_at, 'document_idle');
   assert.equal(isolatedCs.all_frames, true);
 

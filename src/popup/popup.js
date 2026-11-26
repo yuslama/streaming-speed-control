@@ -10,6 +10,8 @@
     stepSpeed,
     normalizeSettings,
     isSupportedHost,
+    getServiceForUrl,
+    SERVICE_NAMES,
   } = globalThis.HboMaxSpeedUtils;
 
   const statusPill = document.getElementById('status-pill');
@@ -29,6 +31,7 @@
   let activeTabId = null;
   let activeTabSupported = false;
   let activeTabDebug = '';
+  let activeServiceName = '';
   let hasVideo = false;
   let settings = normalizeSettings(DEFAULT_SETTINGS);
   let currentSpeed = settings.speed;
@@ -151,15 +154,15 @@
     statusPill.removeAttribute('title');
     if (activeTabSupported && hasVideo) {
       statusPill.classList.add('is-active');
-      statusText.textContent = `Playing at ${label}`;
+      statusText.textContent = activeServiceName ? `Playing on ${activeServiceName}` : `Playing at ${label}`;
     } else if (activeTabSupported) {
       statusPill.classList.add('is-ready');
       statusText.textContent = 'Start a video to apply';
     } else {
-      statusText.textContent = 'Open HBO Max to apply';
-      if (activeTabDebug) {
-        statusPill.title = `Saved for next time. No HBO Max tab found (${activeTabDebug}).`;
-      }
+      statusText.textContent = 'Open a streaming site';
+      statusPill.title = `Works on ${SERVICE_NAMES.join(', ')}. Your speed is saved for next time.${
+        activeTabDebug ? ` (${activeTabDebug})` : ''
+      }`;
     }
   }
 
@@ -203,6 +206,7 @@
       activeTabId = hit.tabId;
       activeTabSupported = true;
       activeTabDebug = '';
+      activeServiceName = await lookupServiceName(hit.tabId);
       hasVideo = Boolean(hit.hasVideo);
       render();
     }
@@ -281,6 +285,19 @@
     }
   }
 
+  async function lookupServiceName(tabId) {
+    if (typeof tabId !== 'number' || !chrome.tabs || typeof chrome.tabs.get !== 'function') {
+      return '';
+    }
+    try {
+      const tab = await withTimeout(chrome.tabs.get(tabId), 600, null);
+      const service = tab ? getServiceForUrl(tab.url || '') : null;
+      return service ? service.name : '';
+    } catch {
+      return '';
+    }
+  }
+
   async function discoverTargetTab() {
     // 1. Check tabs already registered by our content script in the background worker.
     const trackedResp = await sendRuntimeMessage({ type: 'GET_TRACKED_TABS' });
@@ -300,14 +317,14 @@
 
     // 2. Query ALL tabs unfiltered (works reliably across Chromium forks like Ardia/Arc).
     const allTabs = (await withTimeout(chrome.tabs.query({}), 800, [])) || [];
-    const hboTabs = allTabs.filter((t) => typeof t.id === 'number' && isSupportedHost(t.url || ''));
+    const streamingTabs = allTabs.filter((t) => typeof t.id === 'number' && isSupportedHost(t.url || ''));
 
-    if (hboTabs.length > 0) {
+    if (streamingTabs.length > 0) {
       const preferred =
-        hboTabs.find((t) => t.active && t.audible) ||
-        hboTabs.find((t) => t.active) ||
-        hboTabs.find((t) => t.audible) ||
-        hboTabs[0];
+        streamingTabs.find((t) => t.active && t.audible) ||
+        streamingTabs.find((t) => t.active) ||
+        streamingTabs.find((t) => t.audible) ||
+        streamingTabs[0];
 
       let state = await sendTabMessage(preferred.id, { type: 'GET_STATE' });
       if (!state && (await ensureContentScriptsInjected(preferred.id))) {
@@ -317,7 +334,7 @@
       return { tabId: preferred.id, supported: true, state };
     }
 
-    // 3. Probe active/recent tabs even if their reported tab.url isn't hbomax.com (e.g. shell URLs).
+    // 3. Probe active/recent tabs even if their reported tab.url isn't a known streaming URL (e.g. shell URLs).
     const ordered = [...allTabs].sort((a, b) => Number(Boolean(b.active)) - Number(Boolean(a.active)));
     const probeLimit = Math.min(ordered.length, 8);
     for (let i = 0; i < probeLimit; i += 1) {
@@ -356,6 +373,7 @@
       activeTabId = found.tabId;
       activeTabSupported = Boolean(found.supported);
       activeTabDebug = found.debug || '';
+      activeServiceName = await lookupServiceName(found.tabId);
 
       if (found.state) {
         hasVideo = Boolean(found.state.hasVideo);

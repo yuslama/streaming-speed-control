@@ -1,13 +1,13 @@
 {
-  "name": "hbomax-playback-speed",
-  "version": "1.0.0",
+  "name": "streaming-speed-control",
+  "version": "1.1.0",
   "private": true,
-  "description": "Zero-build Manifest V3 Chrome Extension for controlling video playback speed on HBO Max.",
+  "description": "Zero-build Manifest V3 browser extension for playback speed on HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+ and Peacock.",
   "scripts": {
     "icons": "node scripts/generate-icons.mjs",
     "check": "node --check src/shared/speed-utils.js && node --check src/content/page-hook.js && node --check src/content/video-controller.js && node --check src/content/overlay-ui.js && node --check src/content/main.js && node --check src/popup/popup.js && node --check src/background/service-worker.js && node --check scripts/generate-icons.mjs && node --check scripts/screenshots/capture.mjs",
     "test": "node --test tests/*.test.js",
     "screenshots": "node scripts/screenshots/capture.mjs",
-    "package": "rm -rf dist && mkdir -p dist && zip -qr dist/hbo-max-playback-speed-v$npm_package_version.zip manifest.json src icons LICENSE -x '*.DS_Store'"
+    "package": "rm -rf dist && mkdir -p dist && zip -qr dist/streaming-speed-control-v$npm_package_version.zip manifest.json src icons LICENSE -x '*.DS_Store'"
   }
 }

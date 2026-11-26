@@ -13,7 +13,7 @@
   };
   const tab = {
     id: 7,
-    url: state === 'none' ? 'https://example.com/' : 'https://play.hbomax.com/video/watch/demo',
+    url: state === 'none' ? 'https://example.com/' : params.get('url') || 'https://play.hbomax.com/video/watch/demo',
     active: true,
   };
   window.chrome = {
@@ -27,6 +27,7 @@
     },
     tabs: {
       query: async () => [tab],
+      get: async () => tab,
       sendMessage: async (id, m) =>
         state === 'none'
           ? null
