@@ -7,6 +7,9 @@
       /* Player frame: a film still (still.jpg) behind the real overlay. */
       html, body { margin: 0; height: 100%; overflow: hidden; font: 13px -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
       body { background: #000 url(still.jpg) center / cover no-repeat; }
+      .scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.38); }
+      .center { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 118px; color: #e8e8e8; filter: drop-shadow(0 1px 6px rgba(0,0,0,.45)); }
+      .center svg { display: block; }
       .controls { position: fixed; left: 0; right: 0; bottom: 0; padding: 60px 32px 22px; background: linear-gradient(transparent, rgba(0,0,0,.7)); color: #fff; }
       .bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.25); }
       .bar i { display: block; width: 46%; height: 4px; border-radius: 2px; background: #fff; }
@@ -14,6 +17,8 @@
     </style>
   </head>
   <body>
+    <div class="scrim"></div>
+    <div class="center"><svg width="52" height="52" viewBox="0 0 48 48" aria-label="Back 10 seconds"><path d="M13.6 12.4A16 16 0 1 1 8.4 25" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/><path d="M14.5 4.5v9.2H5.3" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><text x="24.5" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif">10</text></svg><svg width="44" height="52" viewBox="0 0 44 52" aria-label="Play"><path d="M4 4L40 26L4 48Z" fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg><svg width="52" height="52" viewBox="0 0 48 48" aria-label="Forward 10 seconds"><path d="M34.4 12.4A16 16 0 1 0 39.6 25" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/><path d="M33.5 4.5v9.2h9.2" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><text x="23.5" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif">10</text></svg></div>
     <div class="controls"><div class="bar"><i></i></div><div class="time"><span>1:16:20</span><span>2:46:00</span></div></div>
     <script src="/src/shared/speed-utils.js"></script>
     <script src="/src/content/overlay-ui.js"></script>
