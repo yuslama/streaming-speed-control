@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Hero</title>
+    <style>
+      html, body { margin: 0; width: 1280px; height: 640px; overflow: hidden; }
+      body {
+        display: grid; grid-template-columns: 1fr 360px; gap: 56px; align-items: center;
+        padding: 0 88px; box-sizing: border-box;
+        background: #0f0f11; color: #ededef;
+        font: 16px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .name { display: flex; align-items: center; gap: 14px; font-size: 20px; font-weight: 600; color: #a0a0a8; }
+      .name img { width: 48px; height: 48px; }
+      h1 { margin: 28px 0 18px; font-size: 64px; line-height: 1.02; letter-spacing: -0.035em; font-weight: 700; color: #fff; }
+      p { margin: 0; max-width: 560px; font-size: 21px; color: #a0a0a8; }
+      iframe { width: 320px; height: 434px; border: 0; border-radius: 14px; box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 30px 80px rgba(0,0,0,.6); background: #161618; }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="name"><img src="/icons/icon128.png" alt="" />HBO Max Playback Speed</div>
+      <h1>The speed control<br />HBO Max left out.</h1>
+      <p>Watch at 1.25x, 1.5x, 1.75x or 2x with one click, or pick anything from 0.25x to 4x. Free and open source.</p>
+    </div>
+    <iframe src="popup.html?state=active&speed=1.5"></iframe>
+  </body>
+</html>
