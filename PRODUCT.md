@@ -35,7 +35,7 @@ One speed control that behaves the same on every supported service: favorite spe
 
 ## Brand Commitments
 
-Product name: "Streaming Speed Control" (popup title "Streaming Speed", manifest short name "Stream Speed"); renamed from "HBO Max Playback Speed" in 1.1.0. Repo: yuslama/streaming-speed-control. It is an unofficial extension: no streaming service's logo, wordmark, or brand colors may be used or imitated.
+Product name: "Streaming Speed Control" (popup title "Streaming Speed", manifest short name "Stream Speed"); renamed from "HBO Max Playback Speed" in 1.1.0. Repo: yuslama/streaming-speed-control. It is an unofficial extension: the extension's own UI and icon never use or imitate a streaming service's logo, wordmark, or brand colors. The services' real wordmarks (`docs/images/services/`) appear only in README and store imagery, in white, to show which services it works with.
 
 Visual standard (chosen 2026-11-26): the category standard, played straight. Clean dark UI at the polish level of Linear / Raycast and native macOS controls (segmented controls, switches, system font). No themed costume.
 

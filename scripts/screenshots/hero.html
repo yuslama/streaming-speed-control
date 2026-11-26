@@ -16,8 +16,10 @@
       .name img { width: 48px; height: 48px; }
       h1 { margin: 28px 0 18px; font-size: 64px; line-height: 1.02; letter-spacing: -0.035em; font-weight: 700; color: #fff; }
       p { margin: 0; max-width: 700px; font-size: 21px; color: #a0a0a8; }
-      .services { display: flex; flex-wrap: wrap; gap: 8px; margin: 28px 0 0; padding: 0; list-style: none; max-width: 760px; }
-      .services li { padding: 7px 13px; border-radius: 9px; background: #1f1f22; color: #ededef; font-size: 15px; font-weight: 600; }
+      .services { display: grid; grid-template-columns: repeat(4, 150px); gap: 10px; margin: 36px 0 0; padding: 0; list-style: none; }
+      .services li { display: flex; align-items: center; justify-content: center; height: 64px; border-radius: 12px; background: #1f1f22; }
+      .services img { display: block; max-width: 104px; max-height: 30px; filter: brightness(0) invert(1); }
+      .services img.tall { max-height: 40px; }
       iframe { width: 320px; height: 434px; border: 0; border-radius: 14px; box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 30px 80px rgba(0,0,0,.6); background: #161618; }
     </style>
   </head>
@@ -26,7 +28,7 @@
       <div class="name"><img src="/icons/icon128.png" alt="" />Streaming Speed Control</div>
       <h1>Speed control for<br />your streaming apps.</h1>
       <p>1.25x, 1.5x, 1.75x or 2x in one click, or anything from 0.25x to 4x.</p>
-      <ul class="services"><li>HBO Max</li><li>Netflix</li><li>Hulu</li><li>Prime Video</li><li>Disney+</li><li>Paramount+</li><li>Peacock</li></ul>
+      <ul class="services"><li><img src="/docs/images/services/hbomax.svg" alt="HBO Max" class="tall" /></li><li><img src="/docs/images/services/netflix.svg" alt="Netflix" /></li><li><img src="/docs/images/services/hulu.svg" alt="Hulu" /></li><li><img src="/docs/images/services/primevideo.svg" alt="Prime Video" /></li><li><img src="/docs/images/services/disneyplus.svg" alt="Disney+" class="tall" /></li><li><img src="/docs/images/services/paramountplus.svg" alt="Paramount+" /></li><li><img src="/docs/images/services/peacock.svg" alt="Peacock" /></li></ul>
     </div>
     <iframe src="popup.html?state=active&speed=1.5&url=https://www.netflix.com/watch/demo"></iframe>
   </body>

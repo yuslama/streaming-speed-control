@@ -26,6 +26,8 @@ This extension adds one speed control that works the same way on all of them. Cl
 
 ## Supported services
 
+<img src="docs/images/services.png" alt="HBO Max, Netflix, Hulu, Prime Video, Disney+, Paramount+ and Peacock" width="840" />
+
 | Service | Sites |
 |---|---|
 | HBO Max | `hbomax.com`, `max.com` |
